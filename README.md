@@ -1,5 +1,5 @@
-# 🏦 Apex Horizon Bank – Banking Management System
-### *Enterprise Full-Stack Python & SQL Web Application*
+# 🏦 Banking Management System
+### *Full-Stack Python & SQL Web Application*
 
 [![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12-blue?logo=python&logoColor=white)](https://python.org)
 [![Flask](https://img.shields.io/badge/Framework-Flask%203.1-black?logo=flask&logoColor=white)](https://flask.palletsprojects.com/)

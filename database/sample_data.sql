@@ -86,5 +86,5 @@ INSERT INTO employees (employee_id, employee_name, position, salary, joining_dat
 -- Admin: admin / Admin@123
 -- Employee: employee / Employee@123
 INSERT INTO users (user_id, username, email, password_hash, role, employee_id, is_active) VALUES
-(1, 'admin', 'admin@apexbank.com', 'scrypt:32768:8:1$iY81Dq2uK4oVf6p1$fa80d197607730e704e0e5a2db87c88b760a92f03f7e26fc54060bbbf5804e12e75e3c78cf0e0eb86716a5a0349b25da1ca11c0f16f393845c43d89163e9f3b1', 'admin', 501, 1),
-(2, 'employee', 'employee@apexbank.com', 'scrypt:32768:8:1$qQ11b0zZ7kL8p2m3$c01a2eb7e2d93e82b7cf53f25c7e108e4200d75a1ceb48520ec719c2ba033d4e0e471958b34005b81a7bb50cb4892cfa712ad6a87c1cbdf16cfa2b9d0e2e92c0', 'employee', 503, 1);
+(1, 'admin', 'admin@bankingsystem.com', 'scrypt:32768:8:1$iY81Dq2uK4oVf6p1$fa80d197607730e704e0e5a2db87c88b760a92f03f7e26fc54060bbbf5804e12e75e3c78cf0e0eb86716a5a0349b25da1ca11c0f16f393845c43d89163e9f3b1', 'admin', 501, 1),
+(2, 'employee', 'employee@bankingsystem.com', 'scrypt:32768:8:1$qQ11b0zZ7kL8p2m3$c01a2eb7e2d93e82b7cf53f25c7e108e4200d75a1ceb48520ec719c2ba033d4e0e471958b34005b81a7bb50cb4892cfa712ad6a87c1cbdf16cfa2b9d0e2e92c0', 'employee', 503, 1);

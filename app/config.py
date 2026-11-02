@@ -7,7 +7,7 @@ load_dotenv()
 
 class Config:
     """Base application configuration."""
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'apex-banking-dev-secret-key-92817293')
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'banking-management-system-secret-key-92817293')
     
     # Database URL
     raw_db_url = os.environ.get('DATABASE_URL', 'sqlite:///banking.db')
@@ -33,13 +33,13 @@ class Config:
     # Default Administrative & Staff Credentials
     DEFAULT_ADMIN_USERNAME = os.environ.get('DEFAULT_ADMIN_USERNAME', 'admin')
     DEFAULT_ADMIN_PASSWORD = os.environ.get('DEFAULT_ADMIN_PASSWORD', 'Admin@123')
-    DEFAULT_ADMIN_EMAIL = os.environ.get('DEFAULT_ADMIN_EMAIL', 'admin@apexbank.com')
+    DEFAULT_ADMIN_EMAIL = os.environ.get('DEFAULT_ADMIN_EMAIL', 'admin@bankingsystem.com')
     
     DEFAULT_EMPLOYEE_USERNAME = os.environ.get('DEFAULT_EMPLOYEE_USERNAME', 'employee')
     DEFAULT_EMPLOYEE_PASSWORD = os.environ.get('DEFAULT_EMPLOYEE_PASSWORD', 'Employee@123')
-    DEFAULT_EMPLOYEE_EMAIL = os.environ.get('DEFAULT_EMPLOYEE_EMAIL', 'employee@apexbank.com')
+    DEFAULT_EMPLOYEE_EMAIL = os.environ.get('DEFAULT_EMPLOYEE_EMAIL', 'employee@bankingsystem.com')
     
     # Bank Identity
-    BANK_NAME = "Apex Horizon Bank"
-    BANK_TAGLINE = "Enterprise Banking Management System"
+    BANK_NAME = "Banking Management System"
+    BANK_TAGLINE = "Full-Stack Python & SQL Web Application"
     APP_VERSION = "2.4.0"
