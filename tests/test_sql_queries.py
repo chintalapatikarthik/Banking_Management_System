@@ -13,21 +13,20 @@ def test_all_registered_sql_queries(app):
             assert result['execution_time_ms'] >= 0
 
 def test_subqueries_edge_cases(app):
-    """Test subquery 1 (customers with no accounts) finds Suresh Raina & Meera Nair."""
+    """Test subquery 1 (customers with no accounts) finds Ananya Das."""
     with app.app_context():
         from app.models import Customer
         from app.database import get_db
         from datetime import date
         with get_db() as db:
-            if not db.query(Customer).filter_by(customer_id=110).first():
-                db.add(Customer(customer_id=110, name='Suresh Raina', email='suresh.raina@example.com', phone='9098765432', address='Alwal, Hyderabad', registration_date=date(2024, 3, 1)))
-                db.add(Customer(customer_id=111, name='Meera Nair', email='meera.nair@example.com', phone='9988776655', address='Gachibowli, Hyderabad', registration_date=date(2024, 4, 10)))
+            if not db.query(Customer).filter_by(customer_id=10).first():
+                db.add(Customer(customer_id=10, name='Ananya Das', email='ananya.das@example.com', phone='9876501010', address='Warangal, Telangana', registration_date=date(2024, 5, 8)))
                 db.commit()
 
         res = run_registered_query('subquery_1')
-        assert res['row_count'] >= 2
+        assert res['row_count'] >= 1
         names = [r['name'] for r in res['rows']]
-        assert 'Suresh Raina' in names
+        assert 'Ananya Das' in names
 
 def test_views_execution(app):
     """Test that database views return expected structures."""
@@ -42,7 +41,7 @@ def test_views_execution(app):
 def test_custom_query_runner_success(app):
     """Test running a safe SELECT query via custom console."""
     with app.app_context():
-        res = run_custom_query("SELECT name, email FROM customers WHERE name LIKE '%Rahul%'")
+        res = run_custom_query("SELECT name, email FROM customers WHERE name LIKE '%Aarav%'")
         assert res['row_count'] >= 1
         assert 'name' in res['columns']
 
@@ -59,14 +58,14 @@ def test_stored_procedures_queries(app):
     """Test all 5 stored procedures individually with parameter handling."""
     with app.app_context():
         # proc_1: sp_customer_accounts
-        p1 = run_registered_query('proc_1', {'p_customer_id': 101})
+        p1 = run_registered_query('proc_1', {'p_customer_id': 1})
         assert p1['row_count'] >= 1
         assert 'account_id' in p1['columns']
         assert 'balance' in p1['columns']
         assert p1['definition'] != ''
 
         # proc_2: sp_account_transactions
-        p2 = run_registered_query('proc_2', {'p_account_id': 201})
+        p2 = run_registered_query('proc_2', {'p_account_id': 101})
         assert p2['row_count'] >= 1
         assert 'transaction_type' in p2['columns']
         assert 'amount' in p2['columns']
@@ -78,13 +77,13 @@ def test_stored_procedures_queries(app):
         assert p3['rows'][0]['total_bank_balance'] > 0
 
         # proc_4: sp_update_balance
-        p4 = run_registered_query('proc_4', {'p_account_id': 201, 'p_new_balance': 90000.00})
+        p4 = run_registered_query('proc_4', {'p_account_id': 101, 'p_new_balance': 90000.00})
         assert p4['row_count'] == 1
         assert p4['rows'][0]['balance'] == 90000.00
 
         # proc_4: negative balance error
         with pytest.raises(ValueError, match="Balance cannot be negative"):
-            run_registered_query('proc_4', {'p_account_id': 201, 'p_new_balance': -500.00})
+            run_registered_query('proc_4', {'p_account_id': 101, 'p_new_balance': -500.00})
 
         # proc_5: sp_insert_customer
         p5 = run_registered_query('proc_5', {
@@ -100,11 +99,11 @@ def test_stored_procedures_queries(app):
 def test_custom_console_procedure_call(app):
     """Test executing CALL sp_... in the custom console."""
     with app.app_context():
-        res1 = run_custom_query("CALL sp_customer_accounts(101)")
+        res1 = run_custom_query("CALL sp_customer_accounts(1)")
         assert res1['row_count'] >= 1
         assert 'account_id' in res1['columns']
 
-        res2 = run_custom_query("CALL sp_account_transactions(201)")
+        res2 = run_custom_query("CALL sp_account_transactions(101)")
         assert res2['row_count'] >= 1
         assert 'amount' in res2['columns']
 
@@ -130,21 +129,21 @@ def test_procedures_web_routes(client):
     assert b"sp_customer_accounts" in resp_ops.data
 
     # 3. API endpoint GET
-    api_get = client.get('/sql-operations/api/run/proc_1?p_customer_id=101')
+    api_get = client.get('/sql-operations/api/run/proc_1?p_customer_id=1')
     assert api_get.status_code == 200
     data = api_get.get_json()
     assert data['success'] is True
     assert data['data']['row_count'] >= 1
 
     # 4. API endpoint POST with parameters
-    api_post = client.post('/sql-operations/api/run/proc_2', json={'p_account_id': 201})
+    api_post = client.post('/sql-operations/api/run/proc_2', json={'p_account_id': 101})
     assert api_post.status_code == 200
     data2 = api_post.get_json()
     assert data2['success'] is True
     assert data2['data']['row_count'] >= 1
 
     # 5. API custom runner with CALL
-    api_custom = client.post('/sql-operations/api/custom', json={'sql': 'CALL sp_customer_accounts(101)'})
+    api_custom = client.post('/sql-operations/api/custom', json={'sql': 'CALL sp_customer_accounts(1)'})
     assert api_custom.status_code == 200
     data3 = api_custom.get_json()
     assert data3['success'] is True
@@ -156,17 +155,17 @@ def test_updates_and_deletes_queries(app, client):
         # update_1: Update account balance
         u1 = run_registered_query('update_1')
         assert u1['row_count'] >= 1
-        assert u1['rows'][0]['balance'] == 95000.00
+        assert u1['rows'][0]['balance'] == 90000.00
 
         # update_2: Change customer email
         u2 = run_registered_query('update_2')
         assert u2['row_count'] >= 1
-        assert u2['rows'][0]['email'] == 'priya.patel.updated@example.com'
+        assert u2['rows'][0]['email'] == 'aarav.updated@example.com'
 
         # update_3: Update branch location
         u3 = run_registered_query('update_3')
         assert u3['row_count'] >= 1
-        assert u3['rows'][0]['location'] == 'Cyberabad, Hyderabad'
+        assert u3['rows'][0]['location'] == 'Hitech City, Hyderabad'
 
         # delete_1: Delete inactive accounts
         d1 = run_registered_query('delete_1')
@@ -177,6 +176,6 @@ def test_updates_and_deletes_queries(app, client):
         assert d2['row_count'] >= 1
 
         # Custom console DML execution
-        custom_dml = run_custom_query("UPDATE customers SET address = 'Banjara Hills, Hyderabad' WHERE customer_id = 101")
+        custom_dml = run_custom_query("UPDATE customers SET address = 'Madhapur, Hyderabad' WHERE customer_id = 1")
         assert custom_dml['row_count'] == 1
         assert custom_dml['rows'][0]['operation'] == 'UPDATE'

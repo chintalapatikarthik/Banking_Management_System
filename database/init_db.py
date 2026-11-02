@@ -147,12 +147,10 @@ def seed_sample_data(db):
     # 1. Branches
     if db.query(Branch).count() == 0:
         branches = [
-            Branch(branch_id=1, branch_name='Hyderabad Main Branch', location='Hyderabad'),
-            Branch(branch_id=2, branch_name='Banjara Hills Branch', location='Hyderabad'),
-            Branch(branch_id=3, branch_name='Bangalore Central', location='Bangalore'),
-            Branch(branch_id=4, branch_name='Mumbai Fort Branch', location='Mumbai'),
-            Branch(branch_id=5, branch_name='Connaught Place Branch', location='Delhi'),
-            Branch(branch_id=6, branch_name='T Nagar Branch', location='Chennai')
+            Branch(branch_id=401, branch_name='Madhapur Branch', location='Madhapur, Hyderabad'),
+            Branch(branch_id=402, branch_name='Kukatpally Branch', location='Kukatpally, Hyderabad'),
+            Branch(branch_id=403, branch_name='Guntur Main Branch', location='Guntur, Andhra Pradesh'),
+            Branch(branch_id=404, branch_name='Vijayawada Branch', location='Vijayawada, Andhra Pradesh')
         ]
         db.add_all(branches)
         db.commit()
@@ -161,17 +159,16 @@ def seed_sample_data(db):
     # 2. Customers
     if db.query(Customer).count() == 0:
         customers = [
-            Customer(customer_id=101, name='Rahul Sharma', email='rahul.sharma@example.com', phone='9876543210', address='Banjara Hills, Hyderabad', registration_date=date(2021, 3, 15)),
-            Customer(customer_id=102, name='Priya Patel', email='priya.patel@example.com', phone='9823456781', address='Koramangala, Bangalore', registration_date=date(2021, 6, 20)),
-            Customer(customer_id=103, name='Amit Kumar', email='amit.kumar@example.com', phone='9712345678', address='Hitec City, Hyderabad', registration_date=date(2022, 1, 10)),
-            Customer(customer_id=104, name='Sneha Reddy', email='sneha.reddy@example.com', phone='9654321870', address='Jubilee Hills, Hyderabad', registration_date=date(2022, 4, 18)),
-            Customer(customer_id=105, name='Vikram Malhotra', email='vikram.m@example.com', phone='9543210987', address='Bandra West, Mumbai', registration_date=date(2022, 8, 5)),
-            Customer(customer_id=106, name='Ananya Iyer', email='ananya.iyer@example.com', phone='9432109876', address='Indiranagar, Bangalore', registration_date=date(2023, 2, 14)),
-            Customer(customer_id=107, name='Rohan Verma', email='rohan.verma@example.com', phone='9321098765', address='Connaught Place, Delhi', registration_date=date(2023, 5, 22)),
-            Customer(customer_id=108, name='Deepika Rao', email='deepika.rao@example.com', phone='9210987654', address='Madhapur, Hyderabad', registration_date=date(2023, 9, 11)),
-            Customer(customer_id=109, name='Karthik Subramanian', email='karthik.s@example.com', phone='9109876543', address='T Nagar, Chennai', registration_date=date(2024, 1, 15)),
-            Customer(customer_id=110, name='Suresh Raina', email='suresh.raina@example.com', phone='9098765432', address='Alwal, Hyderabad', registration_date=date(2024, 3, 1)),
-            Customer(customer_id=111, name='Meera Nair', email='meera.nair@example.com', phone='9988776655', address='Gachibowli, Hyderabad', registration_date=date(2024, 4, 10))
+            Customer(customer_id=1, name='Aarav Reddy', email='aarav.reddy@example.com', phone='9876501001', address='Madhapur, Hyderabad', registration_date=date(2021, 2, 15)),
+            Customer(customer_id=2, name='Priya Sharma', email='priya.sharma@example.com', phone='9876501002', address='Kukatpally, Hyderabad', registration_date=date(2022, 6, 10)),
+            Customer(customer_id=3, name='Rahul Varma', email='rahul.varma@example.com', phone='9876501003', address='Gachibowli, Hyderabad', registration_date=date(2020, 11, 22)),
+            Customer(customer_id=4, name='Sneha Rao', email='sneha.rao@example.com', phone='9876501004', address='Vijayawada, Andhra Pradesh', registration_date=date(2023, 1, 5)),
+            Customer(customer_id=5, name='Kiran Kumar', email='kiran.kumar@example.com', phone='9876501005', address='Guntur, Andhra Pradesh', registration_date=date(2021, 8, 19)),
+            Customer(customer_id=6, name='Meera Nair', email='meera.nair@example.com', phone='9876501006', address='Miyapur, Hyderabad', registration_date=date(2024, 3, 12)),
+            Customer(customer_id=7, name='Arjun Patel', email='arjun.patel@example.com', phone='9876501007', address='Bengaluru, Karnataka', registration_date=date(2022, 9, 30)),
+            Customer(customer_id=8, name='Divya Lakshmi', email='divya.lakshmi@example.com', phone='9876501008', address='Secunderabad, Hyderabad', registration_date=date(2020, 4, 17)),
+            Customer(customer_id=9, name='Vikram Singh', email='vikram.singh@example.com', phone='9876501009', address='Chennai, Tamil Nadu', registration_date=date(2023, 7, 25)),
+            Customer(customer_id=10, name='Ananya Das', email='ananya.das@example.com', phone='9876501010', address='Warangal, Telangana', registration_date=date(2024, 5, 8))
         ]
         db.add_all(customers)
         db.commit()
@@ -180,18 +177,18 @@ def seed_sample_data(db):
     # 3. Accounts
     if db.query(Account).count() == 0:
         accounts = [
-            Account(account_id=201, customer_id=101, branch_id=1, account_type='Savings', balance=Decimal('85000.00'), opening_date=date(2021, 3, 16), account_status='Active'),
-            Account(account_id=202, customer_id=101, branch_id=1, account_type='Current', balance=Decimal('125000.00'), opening_date=date(2021, 9, 10), account_status='Active'),
-            Account(account_id=203, customer_id=102, branch_id=3, account_type='Savings', balance=Decimal('42000.00'), opening_date=date(2021, 6, 22), account_status='Active'),
-            Account(account_id=204, customer_id=103, branch_id=1, account_type='Savings', balance=Decimal('62000.00'), opening_date=date(2022, 1, 12), account_status='Active'),
-            Account(account_id=205, customer_id=104, branch_id=2, account_type='Savings', balance=Decimal('195000.00'), opening_date=date(2022, 4, 20), account_status='Active'),
-            Account(account_id=206, customer_id=105, branch_id=4, account_type='Current', balance=Decimal('310000.00'), opening_date=date(2022, 8, 8), account_status='Active'),
-            Account(account_id=207, customer_id=106, branch_id=3, account_type='Savings', balance=Decimal('28000.00'), opening_date=date(2023, 2, 16), account_status='Active'),
-            Account(account_id=208, customer_id=107, branch_id=5, account_type='Savings', balance=Decimal('54000.00'), opening_date=date(2023, 5, 25), account_status='Active'),
-            Account(account_id=209, customer_id=108, branch_id=2, account_type='Current', balance=Decimal('78000.00'), opening_date=date(2023, 9, 15), account_status='Active'),
-            Account(account_id=210, customer_id=109, branch_id=6, account_type='Savings', balance=Decimal('18500.00'), opening_date=date(2024, 1, 18), account_status='Active'),
-            Account(account_id=211, customer_id=103, branch_id=2, account_type='Current', balance=Decimal('5000.00'), opening_date=date(2024, 2, 1), account_status='Inactive'),
-            Account(account_id=212, customer_id=104, branch_id=1, account_type='Savings', balance=Decimal('15000.00'), opening_date=date(2024, 3, 15), account_status='Active')
+            Account(account_id=101, customer_id=1, branch_id=401, account_type='Savings', balance=Decimal('85000.00'), opening_date=date(2021, 2, 20), account_status='Active'),
+            Account(account_id=102, customer_id=1, branch_id=401, account_type='Current', balance=Decimal('150000.00'), opening_date=date(2022, 1, 15), account_status='Active'),
+            Account(account_id=103, customer_id=2, branch_id=402, account_type='Savings', balance=Decimal('42000.00'), opening_date=date(2022, 6, 15), account_status='Active'),
+            Account(account_id=104, customer_id=3, branch_id=401, account_type='Savings', balance=Decimal('67500.00'), opening_date=date(2020, 12, 1), account_status='Active'),
+            Account(account_id=105, customer_id=3, branch_id=401, account_type='Current', balance=Decimal('210000.00'), opening_date=date(2021, 5, 10), account_status='Active'),
+            Account(account_id=106, customer_id=4, branch_id=404, account_type='Savings', balance=Decimal('18000.00'), opening_date=date(2023, 1, 10), account_status='Active'),
+            Account(account_id=107, customer_id=5, branch_id=403, account_type='Savings', balance=Decimal('52000.00'), opening_date=date(2021, 8, 25), account_status='Active'),
+            Account(account_id=108, customer_id=6, branch_id=402, account_type='Savings', balance=Decimal('9500.00'), opening_date=date(2024, 3, 15), account_status='Inactive'),
+            Account(account_id=109, customer_id=7, branch_id=401, account_type='Current', balance=Decimal('125000.00'), opening_date=date(2022, 10, 5), account_status='Active'),
+            Account(account_id=110, customer_id=8, branch_id=401, account_type='Savings', balance=Decimal('73000.00'), opening_date=date(2020, 4, 25), account_status='Active'),
+            Account(account_id=111, customer_id=8, branch_id=401, account_type='Current', balance=Decimal('35000.00'), opening_date=date(2021, 7, 12), account_status='Active'),
+            Account(account_id=112, customer_id=9, branch_id=401, account_type='Savings', balance=Decimal('61000.00'), opening_date=date(2023, 8, 1), account_status='Inactive')
         ]
         db.add_all(accounts)
         db.commit()
@@ -200,23 +197,30 @@ def seed_sample_data(db):
     # 4. Transactions
     if db.query(Transaction).count() == 0:
         transactions = [
-            Transaction(transaction_id=301, account_id=201, transaction_type='Deposit', amount=Decimal('20000.00'), transaction_date=date(2024, 1, 5), description='Salary credit'),
-            Transaction(transaction_id=302, account_id=201, transaction_type='Withdrawal', amount=Decimal('5000.00'), transaction_date=date(2024, 1, 12), description='ATM withdrawal'),
-            Transaction(transaction_id=303, account_id=202, transaction_type='Deposit', amount=Decimal('50000.00'), transaction_date=date(2024, 1, 15), description='Client payment'),
-            Transaction(transaction_id=304, account_id=203, transaction_type='Deposit', amount=Decimal('15000.00'), transaction_date=date(2024, 1, 20), description='Cash deposit'),
-            Transaction(transaction_id=305, account_id=204, transaction_type='Deposit', amount=Decimal('25000.00'), transaction_date=date(2024, 1, 25), description='Consulting fee'),
-            Transaction(transaction_id=306, account_id=205, transaction_type='Deposit', amount=Decimal('80000.00'), transaction_date=date(2024, 2, 2), description='Business revenue'),
-            Transaction(transaction_id=307, account_id=205, transaction_type='Withdrawal', amount=Decimal('12000.00'), transaction_date=date(2024, 2, 10), description='Vendor payment'),
-            Transaction(transaction_id=308, account_id=206, transaction_type='Deposit', amount=Decimal('100000.00'), transaction_date=date(2024, 2, 15), description='Direct transfer'),
-            Transaction(transaction_id=309, account_id=206, transaction_type='Withdrawal', amount=Decimal('25000.00'), transaction_date=date(2024, 2, 22), description='Equipment purchase'),
-            Transaction(transaction_id=310, account_id=207, transaction_type='Deposit', amount=Decimal('10000.00'), transaction_date=date(2024, 3, 1), description='Freelance stipend'),
-            Transaction(transaction_id=311, account_id=208, transaction_type='Deposit', amount=Decimal('30000.00'), transaction_date=date(2024, 3, 8), description='Quarterly bonus'),
-            Transaction(transaction_id=312, account_id=209, transaction_type='Withdrawal', amount=Decimal('15000.00'), transaction_date=date(2024, 3, 14), description='Office supplies'),
-            Transaction(transaction_id=313, account_id=201, transaction_type='Deposit', amount=Decimal('35000.00'), transaction_date=date(2024, 3, 20), description='Tax refund'),
-            Transaction(transaction_id=314, account_id=202, transaction_type='Withdrawal', amount=Decimal('18000.00'), transaction_date=date(2024, 3, 25), description='Utility bill settlement'),
-            Transaction(transaction_id=315, account_id=210, transaction_type='Deposit', amount=Decimal('12000.00'), transaction_date=date(2024, 4, 2), description='Opening deposit'),
-            Transaction(transaction_id=316, account_id=205, transaction_type='Deposit', amount=Decimal('45000.00'), transaction_date=date(2024, 4, 10), description='Dividend credit'),
-            Transaction(transaction_id=317, account_id=206, transaction_type='Deposit', amount=Decimal('65000.00'), transaction_date=date(2024, 4, 18), description='Retainer fee')
+            Transaction(transaction_id=1001, account_id=101, transaction_type='Deposit', amount=Decimal('20000.00'), transaction_date=date(2024, 1, 5), description='Cash deposit'),
+            Transaction(transaction_id=1002, account_id=101, transaction_type='Withdrawal', amount=Decimal('5000.00'), transaction_date=date(2024, 1, 12), description='ATM withdrawal'),
+            Transaction(transaction_id=1003, account_id=101, transaction_type='Deposit', amount=Decimal('15000.00'), transaction_date=date(2024, 2, 3), description='Account transfer deposit'),
+            Transaction(transaction_id=1004, account_id=102, transaction_type='Deposit', amount=Decimal('50000.00'), transaction_date=date(2024, 1, 8), description='Client payment'),
+            Transaction(transaction_id=1005, account_id=102, transaction_type='Withdrawal', amount=Decimal('12000.00'), transaction_date=date(2024, 2, 14), description='Vendor payment'),
+            Transaction(transaction_id=1006, account_id=102, transaction_type='Transfer', amount=Decimal('25000.00'), transaction_date=date(2024, 3, 2), description='Funds transfer'),
+            Transaction(transaction_id=1007, account_id=103, transaction_type='Deposit', amount=Decimal('8000.00'), transaction_date=date(2024, 1, 20), description='Cash deposit'),
+            Transaction(transaction_id=1008, account_id=103, transaction_type='Withdrawal', amount=Decimal('3000.00'), transaction_date=date(2024, 2, 18), description='ATM withdrawal'),
+            Transaction(transaction_id=1009, account_id=104, transaction_type='Deposit', amount=Decimal('30000.00'), transaction_date=date(2024, 1, 11), description='Salary credit'),
+            Transaction(transaction_id=1010, account_id=104, transaction_type='Withdrawal', amount=Decimal('7000.00'), transaction_date=date(2024, 3, 10), description='Online payment'),
+            Transaction(transaction_id=1011, account_id=105, transaction_type='Deposit', amount=Decimal('75000.00'), transaction_date=date(2024, 1, 16), description='Business revenue'),
+            Transaction(transaction_id=1012, account_id=105, transaction_type='Transfer', amount=Decimal('20000.00'), transaction_date=date(2024, 2, 21), description='Supplier settlement'),
+            Transaction(transaction_id=1013, account_id=105, transaction_type='Withdrawal', amount=Decimal('15000.00'), transaction_date=date(2024, 3, 19), description='Equipment purchase'),
+            Transaction(transaction_id=1014, account_id=106, transaction_type='Deposit', amount=Decimal('6000.00'), transaction_date=date(2024, 2, 2), description='Cash deposit'),
+            Transaction(transaction_id=1015, account_id=107, transaction_type='Deposit', amount=Decimal('18000.00'), transaction_date=date(2024, 1, 25), description='Cash deposit'),
+            Transaction(transaction_id=1016, account_id=107, transaction_type='Withdrawal', amount=Decimal('4000.00'), transaction_date=date(2024, 2, 27), description='ATM withdrawal'),
+            Transaction(transaction_id=1017, account_id=109, transaction_type='Deposit', amount=Decimal('40000.00'), transaction_date=date(2024, 1, 9), description='Direct deposit'),
+            Transaction(transaction_id=1018, account_id=109, transaction_type='Transfer', amount=Decimal('10000.00'), transaction_date=date(2024, 3, 5), description='Transfer payment'),
+            Transaction(transaction_id=1019, account_id=110, transaction_type='Deposit', amount=Decimal('22000.00'), transaction_date=date(2024, 1, 13), description='Dividend deposit'),
+            Transaction(transaction_id=1020, account_id=110, transaction_type='Withdrawal', amount=Decimal('9000.00'), transaction_date=date(2024, 2, 16), description='Branch withdrawal'),
+            Transaction(transaction_id=1021, account_id=111, transaction_type='Deposit', amount=Decimal('12000.00'), transaction_date=date(2024, 1, 30), description='Cash deposit'),
+            Transaction(transaction_id=1022, account_id=111, transaction_type='Withdrawal', amount=Decimal('2500.00'), transaction_date=date(2024, 3, 12), description='ATM withdrawal'),
+            Transaction(transaction_id=1023, account_id=101, transaction_type='Transfer', amount=Decimal('7500.00'), transaction_date=date(2024, 4, 4), description='Account transfer'),
+            Transaction(transaction_id=1024, account_id=105, transaction_type='Deposit', amount=Decimal('35000.00'), transaction_date=date(2024, 4, 15), description='Retainer deposit')
         ]
         db.add_all(transactions)
         db.commit()
@@ -225,12 +229,12 @@ def seed_sample_data(db):
     # 5. Loans
     if db.query(Loan).count() == 0:
         loans = [
-            Loan(loan_id=401, customer_id=101, loan_amount=Decimal('500000.00'), interest_rate=Decimal('8.50'), loan_date=date(2022, 5, 10)),
-            Loan(loan_id=402, customer_id=103, loan_amount=Decimal('1200000.00'), interest_rate=Decimal('7.75'), loan_date=date(2022, 11, 20)),
-            Loan(loan_id=403, customer_id=104, loan_amount=Decimal('2500000.00'), interest_rate=Decimal('8.25'), loan_date=date(2023, 3, 15)),
-            Loan(loan_id=404, customer_id=105, loan_amount=Decimal('3500000.00'), interest_rate=Decimal('9.00'), loan_date=date(2023, 7, 1)),
-            Loan(loan_id=405, customer_id=107, loan_amount=Decimal('750000.00'), interest_rate=Decimal('8.80'), loan_date=date(2023, 10, 12)),
-            Loan(loan_id=406, customer_id=108, loan_amount=Decimal('450000.00'), interest_rate=Decimal('9.50'), loan_date=date(2024, 2, 28))
+            Loan(loan_id=201, customer_id=1, loan_amount=Decimal('500000.00'), interest_rate=Decimal('8.50'), loan_date=date(2022, 3, 10)),
+            Loan(loan_id=202, customer_id=2, loan_amount=Decimal('250000.00'), interest_rate=Decimal('9.00'), loan_date=date(2023, 6, 18)),
+            Loan(loan_id=203, customer_id=3, loan_amount=Decimal('1200000.00'), interest_rate=Decimal('7.75'), loan_date=date(2021, 9, 5)),
+            Loan(loan_id=204, customer_id=5, loan_amount=Decimal('400000.00'), interest_rate=Decimal('8.25'), loan_date=date(2022, 11, 22)),
+            Loan(loan_id=205, customer_id=7, loan_amount=Decimal('850000.00'), interest_rate=Decimal('8.00'), loan_date=date(2023, 2, 14)),
+            Loan(loan_id=206, customer_id=8, loan_amount=Decimal('150000.00'), interest_rate=Decimal('9.25'), loan_date=date(2024, 1, 9))
         ]
         db.add_all(loans)
         db.commit()
@@ -239,14 +243,12 @@ def seed_sample_data(db):
     # 6. Employees
     if db.query(Employee).count() == 0:
         employees = [
-            Employee(employee_id=501, employee_name='Venkatesh Rao', position='Branch Manager', salary=Decimal('95000.00'), joining_date=date(2020, 1, 15), branch_id=1),
-            Employee(employee_id=502, employee_name='Lakshmi Narayanan', position='Assistant Manager', salary=Decimal('75000.00'), joining_date=date(2021, 4, 10), branch_id=1),
-            Employee(employee_id=503, employee_name='Arjun Reddy', position='Loan Officer', salary=Decimal('58000.00'), joining_date=date(2022, 7, 1), branch_id=2),
-            Employee(employee_id=504, employee_name='Divya Krishnan', position='Senior Cashier', salary=Decimal('48000.00'), joining_date=date(2021, 11, 20), branch_id=3),
-            Employee(employee_id=505, employee_name='Manish Tiwari', position='Relationship Manager', salary=Decimal('62000.00'), joining_date=date(2023, 1, 15), branch_id=4),
-            Employee(employee_id=506, employee_name='Pooja Hegde', position='Loan Officer', salary=Decimal('54000.00'), joining_date=date(2023, 6, 1), branch_id=1),
-            Employee(employee_id=507, employee_name='Sanjay Gupta', position='Branch Manager', salary=Decimal('92000.00'), joining_date=date(2023, 9, 10), branch_id=5),
-            Employee(employee_id=508, employee_name='Nisha Sharma', position='Customer Service Rep', salary=Decimal('42000.00'), joining_date=date(2024, 2, 1), branch_id=2)
+            Employee(employee_id=301, employee_name='Suresh Babu', position='Branch Manager', salary=Decimal('85000.00'), joining_date=date(2020, 4, 15), branch_id=401),
+            Employee(employee_id=302, employee_name='Nisha Gupta', position='Accountant', salary=Decimal('52000.00'), joining_date=date(2021, 7, 1), branch_id=401),
+            Employee(employee_id=303, employee_name='Ramesh Naidu', position='Cashier', salary=Decimal('38000.00'), joining_date=date(2022, 11, 10), branch_id=402),
+            Employee(employee_id=304, employee_name='Pooja Menon', position='Loan Officer', salary=Decimal('61000.00'), joining_date=date(2023, 2, 20), branch_id=403),
+            Employee(employee_id=305, employee_name='Imran Khan', position='Customer Support', salary=Decimal('42000.00'), joining_date=date(2024, 1, 8), branch_id=402),
+            Employee(employee_id=306, employee_name='Kavya Reddy', position='Operations Lead', salary=Decimal('70000.00'), joining_date=date(2021, 12, 5), branch_id=404)
         ]
         db.add_all(employees)
         db.commit()
@@ -259,7 +261,7 @@ def seed_sample_data(db):
             username=Config.DEFAULT_ADMIN_USERNAME,
             email=Config.DEFAULT_ADMIN_EMAIL,
             role='admin',
-            employee_id=501,
+            employee_id=301,
             is_active=True
         )
         admin.set_password(Config.DEFAULT_ADMIN_PASSWORD)
@@ -273,7 +275,7 @@ def seed_sample_data(db):
             username=Config.DEFAULT_EMPLOYEE_USERNAME,
             email=Config.DEFAULT_EMPLOYEE_EMAIL,
             role='employee',
-            employee_id=503,
+            employee_id=303,
             is_active=True
         )
         employee.set_password(Config.DEFAULT_EMPLOYEE_PASSWORD)
@@ -281,7 +283,30 @@ def seed_sample_data(db):
         db.commit()
         print(f"[OK] Default Employee user '{Config.DEFAULT_EMPLOYEE_USERNAME}' created.")
 
-def init_database():
+def clear_all_tables(db):
+    """Truncate/clear all tables for clean reseeding."""
+    table_names = ['transactions', 'loans', 'accounts', 'users', 'employees', 'branches', 'customers']
+    # If SQLite, disable foreign key checks temporarily
+    is_sqlite = 'sqlite' in str(engine.url)
+    if is_sqlite:
+        db.execute(text("PRAGMA foreign_keys = OFF;"))
+    else:
+        db.execute(text("SET FOREIGN_KEY_CHECKS = 0;"))
+    
+    for tbl in table_names:
+        try:
+            db.execute(text(f"DELETE FROM {tbl};"))
+        except Exception as e:
+            print(f"Notice: clearing {tbl}: {e}")
+    
+    if is_sqlite:
+        db.execute(text("PRAGMA foreign_keys = ON;"))
+    else:
+        db.execute(text("SET FOREIGN_KEY_CHECKS = 1;"))
+    db.commit()
+    print("[OK] All tables cleared successfully.")
+
+def init_database(reset=False):
     """Complete database setup: creates tables, views, and seeds data."""
     print("="*60)
     print(f"Initializing Banking Management System Database on: {engine.url.drivername}")
@@ -292,6 +317,8 @@ def init_database():
     print("[OK] Tables verified/created successfully.")
 
     with get_db() as db:
+        if reset:
+            clear_all_tables(db)
         create_views(db)
         create_procedures(db)
         seed_sample_data(db)
@@ -300,4 +327,5 @@ def init_database():
     print("="*60)
 
 if __name__ == '__main__':
-    init_database()
+    reset = '--reset' in sys.argv
+    init_database(reset=reset)

@@ -12,16 +12,7 @@ SQL_QUERIES_REGISTRY = {
         'title': 'Accounts with Balance Greater than 50,000',
         'description': 'Filters all bank accounts where the available balance exceeds ₹50,000 using WHERE clause.',
         'sql': """
-SELECT 
-    account_id,
-    customer_id,
-    account_type,
-    balance,
-    opening_date,
-    account_status
-FROM accounts
-WHERE balance > 50000.00
-ORDER BY balance DESC;
+SELECT * FROM accounts WHERE balance > 50000;
         """
     },
     'basic_2': {
@@ -29,16 +20,7 @@ ORDER BY balance DESC;
         'title': 'All Customers from Hyderabad',
         'description': 'Retrieves all customers whose residential or registered address contains "Hyderabad" using LIKE pattern matching.',
         'sql': """
-SELECT 
-    customer_id,
-    name,
-    email,
-    phone,
-    address,
-    registration_date
-FROM customers
-WHERE address LIKE '%Hyderabad%'
-ORDER BY name ASC;
+SELECT * FROM customers WHERE address LIKE '%Hyderabad%';
         """
     },
     'basic_3': {
@@ -46,15 +28,7 @@ ORDER BY name ASC;
         'title': 'List All Savings Accounts',
         'description': 'Lists all accounts classified as Savings account type.',
         'sql': """
-SELECT 
-    account_id,
-    customer_id,
-    balance,
-    opening_date,
-    account_status
-FROM accounts
-WHERE account_type = 'Savings'
-ORDER BY account_id ASC;
+SELECT * FROM accounts WHERE account_type = 'Savings';
         """
     },
     'basic_4': {
@@ -62,15 +36,7 @@ ORDER BY account_id ASC;
         'title': 'Employees Who Joined After 2022',
         'description': 'Filters employees who were hired on or after January 1st, 2023 using date comparison.',
         'sql': """
-SELECT 
-    employee_id,
-    employee_name,
-    position,
-    salary,
-    joining_date
-FROM employees
-WHERE joining_date > '2022-12-31'
-ORDER BY joining_date DESC;
+SELECT * FROM employees WHERE joining_date >= '2023-01-01';
         """
     },
 
@@ -82,17 +48,10 @@ ORDER BY joining_date DESC;
         'title': 'Customer Names with Their Accounts',
         'description': 'Performs an INNER JOIN between Customers and Accounts to show each account alongside its holder name.',
         'sql': """
-SELECT 
-    c.customer_id,
-    c.name AS customer_name,
-    c.email,
-    a.account_id,
-    a.account_type,
-    a.balance,
-    a.account_status
-FROM customers c
-INNER JOIN accounts a ON c.customer_id = a.customer_id
-ORDER BY c.name ASC, a.account_id ASC;
+SELECT c.customer_id, c.name AS customer_name,
+       a.account_id, a.account_type, a.balance, a.opening_date
+FROM Customers c
+INNER JOIN Accounts a ON c.customer_id = a.customer_id;
         """
     },
     'join_2': {
@@ -100,17 +59,10 @@ ORDER BY c.name ASC, a.account_id ASC;
         'title': 'Accounts with Transaction Details',
         'description': 'Joins Accounts with Transactions to review the complete financial activity per account.',
         'sql': """
-SELECT 
-    a.account_id,
-    a.account_type,
-    t.transaction_id,
-    t.transaction_type,
-    t.amount,
-    t.transaction_date,
-    t.description
-FROM accounts a
-INNER JOIN transactions t ON a.account_id = t.account_id
-ORDER BY t.transaction_date DESC, t.transaction_id DESC;
+SELECT a.account_id, a.account_type, a.balance,
+       t.transaction_id, t.transaction_type, t.amount, t.transaction_date
+FROM Accounts a
+INNER JOIN transactions t ON a.account_id = t.account_id;
         """
     },
     'join_3': {
@@ -118,34 +70,21 @@ ORDER BY t.transaction_date DESC, t.transaction_id DESC;
         'title': 'Loan Details with Customer Information',
         'description': 'Joins Loans with Customers to inspect credit exposures linked to customer contact details.',
         'sql': """
-SELECT 
-    l.loan_id,
-    c.customer_id,
-    c.name AS customer_name,
-    c.phone,
-    l.loan_amount,
-    l.interest_rate,
-    l.loan_date
-FROM loans l
-INNER JOIN customers c ON l.customer_id = c.customer_id
-ORDER BY l.loan_amount DESC;
+SELECT l.loan_id, c.customer_id, c.name AS customer_name,
+       l.loan_amount, l.interest_rate, l.loan_date
+FROM Loans l
+INNER JOIN Customers c ON l.customer_id = c.customer_id;
         """
     },
     'join_4': {
         'category': 'Joins',
         'title': 'Employees with Their Branches',
-        'description': 'LEFT JOIN between Employees and Branches showing the branch location each staff member is assigned to.',
+        'description': 'INNER JOIN between Employees and Branches showing the branch location each staff member is assigned to.',
         'sql': """
-SELECT 
-    e.employee_id,
-    e.employee_name,
-    e.position,
-    e.salary,
-    b.branch_name,
-    b.location AS branch_location
-FROM employees e
-LEFT JOIN branches b ON e.branch_id = b.branch_id
-ORDER BY b.location ASC, e.employee_name ASC;
+SELECT e.employee_id, e.employee_name, e.position,
+       b.branch_id, b.branch_name, b.location
+FROM Employees e
+INNER JOIN Branches b ON e.branch_id = b.branch_id;
         """
     },
     'join_5': {
@@ -153,18 +92,11 @@ ORDER BY b.location ASC, e.employee_name ASC;
         'title': 'Customers with Their Transactions',
         'description': 'Multi-table JOIN connecting Customers through Accounts to Transactions.',
         'sql': """
-SELECT 
-    c.customer_id,
-    c.name AS customer_name,
-    a.account_id,
-    t.transaction_id,
-    t.transaction_type,
-    t.amount,
-    t.transaction_date
-FROM customers c
-INNER JOIN accounts a ON c.customer_id = a.customer_id
-INNER JOIN transactions t ON a.account_id = t.account_id
-ORDER BY t.transaction_date DESC;
+SELECT c.customer_id, c.name AS customer_name, a.account_id,
+       t.transaction_id, t.transaction_type, t.amount, t.transaction_date
+FROM Customers c
+INNER JOIN Accounts a ON c.customer_id = a.customer_id
+INNER JOIN transactions t ON a.account_id = t.account_id;
         """
     },
 
@@ -176,7 +108,7 @@ ORDER BY t.transaction_date DESC;
         'title': 'Count Total Customers',
         'description': 'Uses COUNT(*) to compute the total number of registered bank customers.',
         'sql': """
-SELECT COUNT(*) AS total_customers_count FROM customers;
+SELECT COUNT(*) AS total_customers FROM Customers;
         """
     },
     'agg_2': {
@@ -184,11 +116,7 @@ SELECT COUNT(*) AS total_customers_count FROM customers;
         'title': 'Find Average Account Balance',
         'description': 'Uses AVG() and ROUND() to determine the mean balance across all accounts.',
         'sql': """
-SELECT 
-    ROUND(AVG(balance), 2) AS average_account_balance,
-    ROUND(MIN(balance), 2) AS minimum_balance,
-    ROUND(MAX(balance), 2) AS maximum_balance
-FROM accounts;
+SELECT ROUND(AVG(balance), 2) AS average_account_balance FROM Accounts;
         """
     },
     'agg_3': {
@@ -196,39 +124,23 @@ FROM accounts;
         'title': 'Calculate Total Loan Amount',
         'description': 'Uses SUM() to calculate the total outstanding credit / loan portfolio.',
         'sql': """
-SELECT 
-    COUNT(loan_id) AS total_loans_issued,
-    SUM(loan_amount) AS total_loan_disbursed,
-    ROUND(AVG(interest_rate), 2) AS average_interest_rate
-FROM loans;
+SELECT SUM(loan_amount) AS total_loan_amount FROM Loans;
         """
     },
     'agg_4': {
         'category': 'Aggregate Functions',
         'title': 'Count Total Transactions',
-        'description': 'Computes total transaction count and aggregates by transaction type.',
+        'description': 'Computes total transaction count across all accounts.',
         'sql': """
-SELECT 
-    transaction_type,
-    COUNT(*) AS total_count,
-    SUM(amount) AS total_volume
-FROM transactions
-GROUP BY transaction_type;
+SELECT COUNT(*) AS total_transactions FROM transactions;
         """
     },
     'agg_5': {
         'category': 'Aggregate Functions',
         'title': 'Find the Highest Account Balance',
-        'description': 'Finds the highest balance and identifies the corresponding account.',
+        'description': 'Finds the highest balance across all bank accounts.',
         'sql': """
-SELECT 
-    a.account_id,
-    c.name AS customer_name,
-    a.account_type,
-    a.balance
-FROM accounts a
-JOIN customers c ON a.customer_id = c.customer_id
-WHERE a.balance = (SELECT MAX(balance) FROM accounts);
+SELECT MAX(balance) AS highest_account_balance FROM Accounts;
         """
     },
 
@@ -238,33 +150,22 @@ WHERE a.balance = (SELECT MAX(balance) FROM accounts);
     'subquery_1': {
         'category': 'Subqueries',
         'title': 'Find Customers Who Have No Accounts',
-        'description': 'Uses NOT IN or NOT EXISTS subquery to detect prospects who registered but hold no active accounts.',
+        'description': 'Uses NOT EXISTS subquery to detect customers who registered but hold no active accounts.',
         'sql': """
-SELECT 
-    c.customer_id,
-    c.name,
-    c.email,
-    c.phone,
-    c.registration_date
-FROM customers c
-WHERE c.customer_id NOT IN (
-    SELECT DISTINCT customer_id FROM accounts WHERE customer_id IS NOT NULL
+SELECT c.*
+FROM Customers c
+WHERE NOT EXISTS (
+    SELECT 1 FROM Accounts a WHERE a.customer_id = c.customer_id
 );
         """
     },
     'subquery_2': {
         'category': 'Subqueries',
         'title': 'Find Accounts with No Transactions',
-        'description': 'Uses NOT EXISTS subquery to identify dormant or newly opened accounts without any transaction history.',
+        'description': 'Uses NOT EXISTS subquery to identify accounts without any transaction history.',
         'sql': """
-SELECT 
-    a.account_id,
-    c.name AS customer_name,
-    a.account_type,
-    a.balance,
-    a.opening_date
-FROM accounts a
-JOIN customers c ON a.customer_id = c.customer_id
+SELECT a.*
+FROM Accounts a
 WHERE NOT EXISTS (
     SELECT 1 FROM transactions t WHERE t.account_id = a.account_id
 );
@@ -275,14 +176,9 @@ WHERE NOT EXISTS (
         'title': 'Accounts with Balance Greater than Average',
         'description': 'Uses a scalar subquery (AVG) in the WHERE clause to find above-average balance accounts.',
         'sql': """
-SELECT 
-    account_id,
-    customer_id,
-    account_type,
-    balance
-FROM accounts
-WHERE balance > (SELECT AVG(balance) FROM accounts)
-ORDER BY balance DESC;
+SELECT *
+FROM Accounts
+WHERE balance > (SELECT AVG(balance) FROM Accounts);
         """
     },
     'subquery_4': {
@@ -290,15 +186,10 @@ ORDER BY balance DESC;
         'title': 'Customers with Loan Amounts Above Average',
         'description': 'Identifies customers holding loans greater than the bank-wide average loan amount.',
         'sql': """
-SELECT 
-    c.name AS customer_name,
-    l.loan_id,
-    l.loan_amount,
-    l.interest_rate
-FROM loans l
-JOIN customers c ON l.customer_id = c.customer_id
-WHERE l.loan_amount > (SELECT AVG(loan_amount) FROM loans)
-ORDER BY l.loan_amount DESC;
+SELECT c.customer_id, c.name AS customer_name, l.loan_id, l.loan_amount
+FROM Customers c
+INNER JOIN Loans l ON c.customer_id = l.customer_id
+WHERE l.loan_amount > (SELECT AVG(loan_amount) FROM Loans);
         """
     },
     'subquery_5': {
@@ -306,16 +197,9 @@ ORDER BY l.loan_amount DESC;
         'title': 'Transactions Above Average Amount',
         'description': 'Filters all transactions that exceed the average monetary value of all transactions.',
         'sql': """
-SELECT 
-    transaction_id,
-    account_id,
-    transaction_type,
-    amount,
-    transaction_date,
-    description
+SELECT *
 FROM transactions
-WHERE amount > (SELECT AVG(amount) FROM transactions)
-ORDER BY amount DESC;
+WHERE amount > (SELECT AVG(amount) FROM transactions);
         """
     },
 
@@ -370,16 +254,16 @@ SELECT * FROM v_high_value_transactions ORDER BY amount DESC;
         'category': 'Stored Procedures',
         'title': 'Display Customer Accounts (sp_customer_accounts)',
         'procedure_name': 'sp_customer_accounts',
-        'description': 'Executes stored procedure sp_customer_accounts to list all bank accounts, account types, balances, and branch details held by a specific customer (default: Customer ID 101).',
+        'description': 'Executes stored procedure sp_customer_accounts to list all bank accounts, account types, balances, and branch details held by a specific customer (default: Customer ID 1).',
         'parameters': [
-            {'name': 'p_customer_id', 'type': 'INT', 'default': 101, 'label': 'Customer ID'}
+            {'name': 'p_customer_id', 'type': 'INT', 'default': 1, 'label': 'Customer ID'}
         ],
         'sql': """
 -- 1. Stored Procedure: Display Accounts of a Customer
 -- Database Engine: MySQL 8.x / Banking System Schema
 
 -- Call Stored Procedure:
-CALL sp_customer_accounts(101);
+CALL sp_customer_accounts(1);
         """.strip(),
         'definition': """
 DELIMITER $$
@@ -408,16 +292,16 @@ DELIMITER ;
         'category': 'Stored Procedures',
         'title': 'Account Transaction Ledger (sp_account_transactions)',
         'procedure_name': 'sp_account_transactions',
-        'description': 'Executes stored procedure sp_account_transactions to retrieve the complete chronological financial ledger statement for a given account (default: Account ID 201).',
+        'description': 'Executes stored procedure sp_account_transactions to retrieve the complete chronological financial ledger statement for a given account (default: Account ID 101).',
         'parameters': [
-            {'name': 'p_account_id', 'type': 'INT', 'default': 201, 'label': 'Account ID'}
+            {'name': 'p_account_id', 'type': 'INT', 'default': 101, 'label': 'Account ID'}
         ],
         'sql': """
 -- 2. Stored Procedure: Display Transactions of an Account
 -- Database Engine: MySQL 8.x / Banking System Schema
 
 -- Call Stored Procedure:
-CALL sp_account_transactions(201);
+CALL sp_account_transactions(101);
         """.strip(),
         'definition': """
 DELIMITER $$
@@ -471,20 +355,20 @@ DELIMITER ;
         'procedure_name': 'sp_update_balance',
         'description': 'Executes stored procedure sp_update_balance enforcing business check constraints (raises SQLSTATE 45000 if balance is negative) and returns the updated account state.',
         'parameters': [
-            {'name': 'p_account_id', 'type': 'INT', 'default': 201, 'label': 'Account ID'},
-            {'name': 'p_new_balance', 'type': 'DECIMAL', 'default': 85000.00, 'label': 'New Balance (₹)'}
+            {'name': 'p_account_id', 'type': 'INT', 'default': 101, 'label': 'Account ID'},
+            {'name': 'p_new_balance', 'type': 'DECIMAL', 'default': 90000.00, 'label': 'New Balance (₹)'}
         ],
         'sql': """
 -- 4. Stored Procedure: Update Account Balance with Integrity Validation
 -- Database Engine: MySQL 8.x / Banking System Schema
 
 -- Call Stored Procedure:
-CALL sp_update_balance(201, 85000.00);
+CALL sp_update_balance(101, 90000.00);
 
 -- Verify Result:
 SELECT account_id, customer_id, account_type, balance, account_status 
 FROM accounts 
-WHERE account_id = 201;
+WHERE account_id = 101;
         """.strip(),
         'definition': """
 DELIMITER $$
@@ -560,49 +444,49 @@ DELIMITER ;
     'update_1': {
         'category': 'Updates & Deletes',
         'title': 'Update Account Balance',
-        'description': 'Updates the balance of account 201 to ₹95,000.00 and verifies the updated account record.',
+        'description': 'Updates the balance of account 101 to ₹90,000.00 and verifies the updated account record.',
         'sql': """
 -- 1. Update Account Balance:
 UPDATE accounts 
-SET balance = 95000.00 
-WHERE account_id = 201;
+SET balance = 90000.00 
+WHERE account_id = 101;
 
 -- 2. Verify Updated Account Balance:
 SELECT account_id, customer_id, account_type, balance, account_status 
 FROM accounts 
-WHERE account_id = 201;
+WHERE account_id = 101;
         """.strip()
     },
     'update_2': {
         'category': 'Updates & Deletes',
         'title': 'Change Customer Email',
-        'description': 'Updates the registered email address for customer ID 102 to priya.patel.updated@example.com and verifies the profile.',
+        'description': 'Updates the registered email address for customer ID 1 to aarav.updated@example.com and verifies the profile.',
         'sql': """
 -- 1. Change Customer Email:
 UPDATE customers 
-SET email = 'priya.patel.updated@example.com' 
-WHERE customer_id = 102;
+SET email = 'aarav.updated@example.com' 
+WHERE customer_id = 1;
 
 -- 2. Verify Changed Customer Email:
 SELECT customer_id, name, email, phone, address, registration_date 
 FROM customers 
-WHERE customer_id = 102;
+WHERE customer_id = 1;
         """.strip()
     },
     'update_3': {
         'category': 'Updates & Deletes',
         'title': 'Update Branch Location',
-        'description': 'Updates the physical branch location for branch ID 1 to Cyberabad, Hyderabad and verifies the branch record.',
+        'description': 'Updates the physical branch location for branch ID 401 to Hitech City, Hyderabad and verifies the branch record.',
         'sql': """
 -- 1. Update Branch Location:
 UPDATE branches 
-SET location = 'Cyberabad, Hyderabad' 
-WHERE branch_id = 1;
+SET location = 'Hitech City, Hyderabad' 
+WHERE branch_id = 401;
 
 -- 2. Verify Updated Branch Location:
 SELECT branch_id, branch_name, location 
 FROM branches 
-WHERE branch_id = 1;
+WHERE branch_id = 401;
         """.strip()
     },
     'delete_1': {
@@ -623,19 +507,22 @@ WHERE account_status = 'Inactive';
     'delete_2': {
         'category': 'Updates & Deletes',
         'title': 'Delete Customers with No Accounts',
-        'description': 'Deletes customer records who do not hold any bank accounts using a subquery and verifies that no orphan customers remain.',
+        'description': 'Deletes customer records who do not hold any bank accounts or loans and verifies that no orphan customers remain.',
         'sql': """
 -- 1. Delete Customers With No Accounts:
 DELETE FROM customers 
-WHERE customer_id NOT IN (
-    SELECT DISTINCT customer_id FROM accounts WHERE customer_id IS NOT NULL
+WHERE NOT EXISTS (
+    SELECT 1 FROM accounts a WHERE a.customer_id = customers.customer_id
+)
+AND NOT EXISTS (
+    SELECT 1 FROM loans l WHERE l.customer_id = customers.customer_id
 );
 
 -- 2. Verify Customers with No Accounts (Should return 0):
 SELECT customer_id, name, email, phone, registration_date 
 FROM customers 
-WHERE customer_id NOT IN (
-    SELECT DISTINCT customer_id FROM accounts WHERE customer_id IS NOT NULL
+WHERE NOT EXISTS (
+    SELECT 1 FROM accounts a WHERE a.customer_id = customers.customer_id
 );
         """.strip()
     },
@@ -752,16 +639,16 @@ ORDER BY l.loan_amount DESC;
 def _build_procedure_call_sql(query_key, q_info, params):
     """Generate dynamic formatted CALL query reflecting user-provided or default parameters."""
     if query_key == 'proc_1':
-        cid = params.get('p_customer_id', 101)
+        cid = params.get('p_customer_id', 1)
         return f"-- Invoke Stored Procedure with Customer ID {cid}:\nCALL sp_customer_accounts({cid});"
     elif query_key == 'proc_2':
-        aid = params.get('p_account_id', 201)
+        aid = params.get('p_account_id', 101)
         return f"-- Invoke Stored Procedure with Account ID {aid}:\nCALL sp_account_transactions({aid});"
     elif query_key == 'proc_3':
         return "-- Invoke Stored Procedure with OUT parameter:\nCALL sp_calculate_total_balance(@total_balance);\nSELECT @total_balance AS total_bank_balance;"
     elif query_key == 'proc_4':
-        aid = params.get('p_account_id', 201)
-        bal = params.get('p_new_balance', 85000.00)
+        aid = params.get('p_account_id', 101)
+        bal = params.get('p_new_balance', 90000.00)
         return f"-- Invoke Stored Procedure with Account {aid} and Balance ₹{bal}:\nCALL sp_update_balance({aid}, {bal});\n\n-- Verify Updated Account:\nSELECT account_id, customer_id, account_type, balance, account_status FROM accounts WHERE account_id = {aid};"
     elif query_key == 'proc_5':
         name = params.get('p_name', 'Kavita Krishnan')
@@ -780,7 +667,7 @@ def _execute_stored_procedure(query_key, q_info, params):
     is_mysql = 'mysql' in str(engine.url)
 
     if query_key == 'proc_1':
-        p_id = int(params.get('p_customer_id') or 101)
+        p_id = int(params.get('p_customer_id') or 1)
         if is_mysql:
             try:
                 return execute_raw_sql("CALL sp_customer_accounts(:p_customer_id)", {'p_customer_id': p_id}, fetch_all=True)
@@ -803,7 +690,7 @@ def _execute_stored_procedure(query_key, q_info, params):
         return execute_raw_sql(sql, {'p_customer_id': p_id}, fetch_all=True)
 
     elif query_key == 'proc_2':
-        a_id = int(params.get('p_account_id') or 201)
+        a_id = int(params.get('p_account_id') or 101)
         if is_mysql:
             try:
                 return execute_raw_sql("CALL sp_account_transactions(:p_account_id)", {'p_account_id': a_id}, fetch_all=True)
@@ -833,8 +720,8 @@ def _execute_stored_procedure(query_key, q_info, params):
         return execute_raw_sql(sql, fetch_all=True)
 
     elif query_key == 'proc_4':
-        a_id = int(params.get('p_account_id') or 201)
-        new_bal = float(params.get('p_new_balance') if params.get('p_new_balance') is not None else 85000.00)
+        a_id = int(params.get('p_account_id') or 101)
+        new_bal = float(params.get('p_new_balance') if params.get('p_new_balance') is not None else 90000.00)
         if new_bal < 0:
             raise ValueError("Balance cannot be negative (SQLSTATE 45000: sp_update_balance integrity check failed)")
 
@@ -906,31 +793,31 @@ def _execute_update_delete(query_key, q_info, params):
     """
     if query_key == 'update_1':
         execute_raw_sql(
-            "UPDATE accounts SET balance = 95000.00 WHERE account_id = 201",
+            "UPDATE accounts SET balance = 90000.00 WHERE account_id = 101",
             commit=True
         )
         return execute_raw_sql(
-            "SELECT account_id, customer_id, account_type, balance, account_status, 'Balance Updated Successfully' AS status_check FROM accounts WHERE account_id = 201",
+            "SELECT account_id, customer_id, account_type, balance, account_status, 'Balance Updated Successfully' AS status_check FROM accounts WHERE account_id = 101",
             fetch_all=True
         )
 
     elif query_key == 'update_2':
         execute_raw_sql(
-            "UPDATE customers SET email = 'priya.patel.updated@example.com' WHERE customer_id = 102",
+            "UPDATE customers SET email = 'aarav.updated@example.com' WHERE customer_id = 1",
             commit=True
         )
         return execute_raw_sql(
-            "SELECT customer_id, name, email, phone, address, registration_date, 'Email Changed Successfully' AS status_check FROM customers WHERE customer_id = 102",
+            "SELECT customer_id, name, email, phone, address, registration_date, 'Email Changed Successfully' AS status_check FROM customers WHERE customer_id = 1",
             fetch_all=True
         )
 
     elif query_key == 'update_3':
         execute_raw_sql(
-            "UPDATE branches SET location = 'Cyberabad, Hyderabad' WHERE branch_id = 1",
+            "UPDATE branches SET location = 'Hitech City, Hyderabad' WHERE branch_id = 401",
             commit=True
         )
         return execute_raw_sql(
-            "SELECT branch_id, branch_name, location, 'Branch Location Updated' AS status_check FROM branches WHERE branch_id = 1",
+            "SELECT branch_id, branch_name, location, 'Branch Location Updated' AS status_check FROM branches WHERE branch_id = 401",
             fetch_all=True
         )
 
@@ -944,20 +831,20 @@ def _execute_update_delete(query_key, q_info, params):
             fetch_all=True
         )
         if not rows:
-            return [{'status': 'Inactive Accounts Deleted', 'message': f'Deleted {deleted if isinstance(deleted, int) else 1} inactive account(s). 0 inactive accounts remain.', 'remaining_count': 0}]
+            return [{'status': 'Inactive Accounts Deleted', 'message': f'Deleted {deleted if isinstance(deleted, int) else 2} inactive account(s). 0 inactive accounts remain.', 'remaining_count': 0}]
         return rows
 
     elif query_key == 'delete_2':
         orphans = execute_raw_sql(
-            "SELECT customer_id, name, email FROM customers WHERE customer_id NOT IN (SELECT DISTINCT customer_id FROM accounts WHERE customer_id IS NOT NULL)",
+            "SELECT customer_id, name, email FROM customers WHERE NOT EXISTS (SELECT 1 FROM accounts a WHERE a.customer_id = customers.customer_id) AND NOT EXISTS (SELECT 1 FROM loans l WHERE l.customer_id = customers.customer_id)",
             fetch_all=True
         )
         deleted = execute_raw_sql(
-            "DELETE FROM customers WHERE customer_id NOT IN (SELECT DISTINCT customer_id FROM accounts WHERE customer_id IS NOT NULL)",
+            "DELETE FROM customers WHERE NOT EXISTS (SELECT 1 FROM accounts a WHERE a.customer_id = customers.customer_id) AND NOT EXISTS (SELECT 1 FROM loans l WHERE l.customer_id = customers.customer_id)",
             commit=True
         )
         rows = execute_raw_sql(
-            "SELECT customer_id, name, email, phone, registration_date FROM customers WHERE customer_id NOT IN (SELECT DISTINCT customer_id FROM accounts WHERE customer_id IS NOT NULL)",
+            "SELECT customer_id, name, email, phone, registration_date FROM customers WHERE NOT EXISTS (SELECT 1 FROM accounts a WHERE a.customer_id = customers.customer_id)",
             fetch_all=True
         )
         if not rows:
@@ -1029,16 +916,16 @@ def run_custom_query(custom_sql):
             raw_args = [arg.strip().strip("'\"") for arg in match.group(2).split(',') if arg.strip()] if match.group(2) else []
             
             if proc_name == 'sp_customer_accounts':
-                cid = int(raw_args[0]) if raw_args and raw_args[0].isdigit() else 101
+                cid = int(raw_args[0]) if raw_args and raw_args[0].isdigit() else 1
                 rows = _execute_stored_procedure('proc_1', SQL_QUERIES_REGISTRY['proc_1'], {'p_customer_id': cid})
             elif proc_name == 'sp_account_transactions':
-                aid = int(raw_args[0]) if raw_args and raw_args[0].isdigit() else 201
+                aid = int(raw_args[0]) if raw_args and raw_args[0].isdigit() else 101
                 rows = _execute_stored_procedure('proc_2', SQL_QUERIES_REGISTRY['proc_2'], {'p_account_id': aid})
             elif proc_name == 'sp_calculate_total_balance':
                 rows = _execute_stored_procedure('proc_3', SQL_QUERIES_REGISTRY['proc_3'], {})
             elif proc_name == 'sp_update_balance':
-                aid = int(raw_args[0]) if len(raw_args) > 0 and raw_args[0].isdigit() else 201
-                bal = float(raw_args[1]) if len(raw_args) > 1 else 85000.00
+                aid = int(raw_args[0]) if len(raw_args) > 0 and raw_args[0].isdigit() else 101
+                bal = float(raw_args[1]) if len(raw_args) > 1 else 90000.00
                 rows = _execute_stored_procedure('proc_4', SQL_QUERIES_REGISTRY['proc_4'], {'p_account_id': aid, 'p_new_balance': bal})
             elif proc_name == 'sp_insert_customer':
                 name = raw_args[0] if len(raw_args) > 0 else 'Kavita Krishnan'
