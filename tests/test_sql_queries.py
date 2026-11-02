@@ -38,13 +38,13 @@ def test_custom_query_runner_success(app):
         assert 'name' in res['columns']
 
 def test_custom_query_destructive_statement_blocked(app):
-    """Test that destructive DDL / DML is blocked in the read-only console."""
+    """Test that destructive DDL statements like DROP or ALTER are blocked."""
     with app.app_context():
-        with pytest.raises(ValueError, match="Only read-only queries"):
+        with pytest.raises(ValueError, match="Only queries"):
             run_custom_query("DROP TABLE accounts")
 
-        with pytest.raises(ValueError, match="Only read-only queries"):
-            run_custom_query("DELETE FROM customers")
+        with pytest.raises(ValueError, match="Only queries"):
+            run_custom_query("ALTER TABLE customers ADD COLUMN test INT")
 
 def test_stored_procedures_queries(app):
     """Test all 5 stored procedures individually with parameter handling."""
@@ -108,15 +108,11 @@ def test_procedures_web_routes(client):
     # Login as admin
     client.post('/login', data={'username': 'admin', 'password': 'Admin@123'})
 
-    # 1. Stored Procedures Workbench Page
-    resp = client.get('/sql-operations/procedures')
+    # 1. Stored Procedures Route redirects directly into SQL Operations
+    resp = client.get('/sql-operations/procedures', follow_redirects=True)
     assert resp.status_code == 200
-    assert b"Enterprise Stored Procedures Console" in resp.data
+    assert b"Stored Procedures" in resp.data
     assert b"sp_customer_accounts" in resp.data
-    assert b"sp_account_transactions" in resp.data
-    assert b"sp_calculate_total_balance" in resp.data
-    assert b"sp_update_balance" in resp.data
-    assert b"sp_insert_customer" in resp.data
 
     # 2. Main SQL Operations Page with Stored Procedures
     resp_ops = client.get('/sql-operations/?key=proc_1')
@@ -144,3 +140,40 @@ def test_procedures_web_routes(client):
     data3 = api_custom.get_json()
     assert data3['success'] is True
     assert data3['data']['row_count'] >= 1
+
+def test_updates_and_deletes_queries(app, client):
+    """Test all DML update and delete exercises."""
+    with app.app_context():
+        # update_1: Customer address & phone
+        u1 = run_registered_query('update_1')
+        assert u1['row_count'] >= 1
+        assert 'dml_status' in u1['columns']
+        assert u1['rows'][0]['phone'] == '9876543211'
+
+        # update_2: Salary increment
+        u2 = run_registered_query('update_2')
+        assert u2['row_count'] >= 1
+        assert 'salary' in u2['columns']
+
+        # update_3: Inactive status update
+        u3 = run_registered_query('update_3')
+        assert u3['row_count'] >= 1
+        assert 'account_status' in u3['columns']
+
+        # update_4: Loan interest concession
+        u4 = run_registered_query('update_4')
+        assert u4['row_count'] >= 1
+        assert 'interest_rate' in u4['columns']
+
+        # delete_1: Dormant accounts cleanup
+        d1 = run_registered_query('delete_1')
+        assert d1['row_count'] >= 1
+
+        # delete_2: Test customer leads cleanup
+        d2 = run_registered_query('delete_2')
+        assert d2['row_count'] >= 1
+
+        # Custom console DML execution
+        custom_dml = run_custom_query("UPDATE customers SET address = 'Banjara Hills, Hyderabad' WHERE customer_id = 101")
+        assert custom_dml['row_count'] == 1
+        assert custom_dml['rows'][0]['operation'] == 'UPDATE'

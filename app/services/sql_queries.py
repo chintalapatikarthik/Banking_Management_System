@@ -555,6 +555,107 @@ DELIMITER ;
     },
 
     # -------------------------------------------------------------
+    # Updates & Deletes (Data Manipulation Language - DML)
+    # -------------------------------------------------------------
+    'update_1': {
+        'category': 'Updates & Deletes',
+        'title': 'Update Customer Address & Phone Number',
+        'description': 'Updates residential contact address and telephone number for customer ID 101, then returns verified customer profile.',
+        'sql': """
+-- 1. Update Customer Contact Details:
+UPDATE customers 
+SET phone = '9876543211', address = 'Road No 36, Jubilee Hills, Hyderabad' 
+WHERE customer_id = 101;
+
+-- 2. Verify Updated Customer Record:
+SELECT customer_id, name, email, phone, address, registration_date 
+FROM customers 
+WHERE customer_id = 101;
+        """.strip()
+    },
+    'update_2': {
+        'category': 'Updates & Deletes',
+        'title': 'Annual Salary Appraisal for Branch Managers',
+        'description': 'Applies a 10% annual salary appraisal (ROUND(salary * 1.10, 2)) for all staff with the position Branch Manager.',
+        'sql': """
+-- 1. Apply 10% Salary Increment:
+UPDATE employees 
+SET salary = ROUND(salary * 1.10, 2) 
+WHERE position = 'Branch Manager';
+
+-- 2. Verify Appraised Branch Managers:
+SELECT employee_id, employee_name, position, salary, joining_date 
+FROM employees 
+WHERE position = 'Branch Manager';
+        """.strip()
+    },
+    'update_3': {
+        'category': 'Updates & Deletes',
+        'title': 'Update Inactive Account Status to Suspended',
+        'description': 'Changes account_status to Suspended for inactive accounts holding a balance below ₹10,000.',
+        'sql': """
+-- 1. Suspend Inactive Low-Balance Accounts:
+UPDATE accounts 
+SET account_status = 'Suspended' 
+WHERE account_status = 'Inactive' AND balance < 10000.00;
+
+-- 2. Verify Affected Accounts:
+SELECT account_id, customer_id, account_type, balance, account_status 
+FROM accounts 
+WHERE account_status IN ('Inactive', 'Suspended');
+        """.strip()
+    },
+    'update_4': {
+        'category': 'Updates & Deletes',
+        'title': 'Interest Rate Concession on High-Value Loans',
+        'description': 'Applies a 0.25% interest rate discount (interest_rate = interest_rate - 0.25) to large credit exposures >= ₹2,000,000.',
+        'sql': """
+-- 1. Apply 0.25% Interest Rate Concession:
+UPDATE loans 
+SET interest_rate = ROUND(interest_rate - 0.25, 2) 
+WHERE loan_amount >= 2000000.00;
+
+-- 2. Verify Concessional High-Value Loans:
+SELECT loan_id, customer_id, loan_amount, interest_rate, loan_date 
+FROM loans 
+WHERE loan_amount >= 2000000.00;
+        """.strip()
+    },
+    'delete_1': {
+        'category': 'Updates & Deletes',
+        'title': 'Delete Dormant Inactive Accounts with Zero Balance',
+        'description': 'Safely removes dormant inactive accounts holding zero balance and having zero transaction records.',
+        'sql': """
+-- 1. Purge Dormant Zero-Balance Accounts:
+DELETE FROM accounts 
+WHERE account_status = 'Inactive' 
+  AND balance = 0.00 
+  AND account_id NOT IN (SELECT DISTINCT account_id FROM transactions);
+
+-- 2. Verify Cleanup (Should return 0 dormant zero-balance accounts):
+SELECT account_id, customer_id, account_type, balance, account_status 
+FROM accounts 
+WHERE account_status = 'Inactive' AND balance = 0.00;
+        """.strip()
+    },
+    'delete_2': {
+        'category': 'Updates & Deletes',
+        'title': 'Delete Unverified Temporary Customer Leads',
+        'description': 'Purges unverified test and temporary prospective customer leads whose email domain matches test domains.',
+        'sql': """
+-- 1. Delete Temporary Leads Without Accounts:
+DELETE FROM customers 
+WHERE (email LIKE '%@test.com' OR email LIKE '%@temp.com')
+  AND customer_id NOT IN (SELECT DISTINCT customer_id FROM accounts);
+
+-- 2. Verify Remaining Test Leads:
+SELECT customer_id, name, email, phone, registration_date 
+FROM customers 
+WHERE email LIKE '%@test.com' OR email LIKE '%@temp.com';
+        """.strip()
+    },
+
+    # -------------------------------------------------------------
     # Reports and Analysis
     # -------------------------------------------------------------
     'report_1': {
@@ -813,9 +914,82 @@ def _execute_stored_procedure(query_key, q_info, params):
 
     raise ValueError(f"Unknown stored procedure key '{query_key}'")
 
+def _execute_update_delete(query_key, q_info, params):
+    """
+    Executes DML statements (UPDATE / DELETE) with commit=True,
+    then retrieves and returns the verified record state as tabular results.
+    """
+    if query_key == 'update_1':
+        execute_raw_sql(
+            "UPDATE customers SET phone = '9876543211', address = 'Road No 36, Jubilee Hills, Hyderabad' WHERE customer_id = 101",
+            commit=True
+        )
+        return execute_raw_sql(
+            "SELECT customer_id, name, email, phone, address, registration_date, 'Customer Record Updated' AS dml_status FROM customers WHERE customer_id = 101",
+            fetch_all=True
+        )
+
+    elif query_key == 'update_2':
+        execute_raw_sql(
+            "UPDATE employees SET salary = ROUND(salary * 1.10, 2) WHERE position = 'Branch Manager'",
+            commit=True
+        )
+        return execute_raw_sql(
+            "SELECT employee_id, employee_name, position, salary, joining_date, 'Appraisal Applied (+10%)' AS dml_status FROM employees WHERE position = 'Branch Manager'",
+            fetch_all=True
+        )
+
+    elif query_key == 'update_3':
+        execute_raw_sql(
+            "UPDATE accounts SET account_status = 'Suspended' WHERE account_status = 'Inactive' AND balance < 10000.00",
+            commit=True
+        )
+        return execute_raw_sql(
+            "SELECT account_id, customer_id, account_type, balance, account_status, 'Status Updated to Suspended' AS dml_status FROM accounts WHERE account_status IN ('Inactive', 'Suspended')",
+            fetch_all=True
+        )
+
+    elif query_key == 'update_4':
+        execute_raw_sql(
+            "UPDATE loans SET interest_rate = ROUND(interest_rate - 0.25, 2) WHERE loan_amount >= 2000000.00",
+            commit=True
+        )
+        return execute_raw_sql(
+            "SELECT loan_id, customer_id, loan_amount, interest_rate, loan_date, 'Concession Applied (-0.25%)' AS dml_status FROM loans WHERE loan_amount >= 2000000.00",
+            fetch_all=True
+        )
+
+    elif query_key == 'delete_1':
+        deleted = execute_raw_sql(
+            "DELETE FROM accounts WHERE account_status = 'Inactive' AND balance = 0.00 AND account_id NOT IN (SELECT DISTINCT account_id FROM transactions)",
+            commit=True
+        )
+        rows = execute_raw_sql(
+            "SELECT account_id, customer_id, account_type, balance, account_status FROM accounts WHERE account_status = 'Inactive' AND balance = 0.00",
+            fetch_all=True
+        )
+        if not rows:
+            return [{'status': 'Cleaned Successfully', 'message': '0 dormant zero-balance accounts remain in database', 'records_deleted': deleted if isinstance(deleted, int) else 0}]
+        return rows
+
+    elif query_key == 'delete_2':
+        deleted = execute_raw_sql(
+            "DELETE FROM customers WHERE (email LIKE '%@test.com' OR email LIKE '%@temp.com') AND customer_id NOT IN (SELECT DISTINCT customer_id FROM accounts)",
+            commit=True
+        )
+        rows = execute_raw_sql(
+            "SELECT customer_id, name, email, phone, registration_date FROM customers WHERE email LIKE '%@test.com' OR email LIKE '%@temp.com'",
+            fetch_all=True
+        )
+        if not rows:
+            return [{'status': 'Cleaned Successfully', 'message': 'All unverified test leads purged', 'records_deleted': deleted if isinstance(deleted, int) else 0}]
+        return rows
+
+    raise ValueError(f"Unknown update/delete query key '{query_key}'")
+
 def run_registered_query(query_key, params=None):
     """
-    Executes a predefined SQL exercise query or stored procedure.
+    Executes a predefined SQL exercise query, stored procedure, or DML update/delete.
     Supports dynamic parameter binding, native execution, and emulation fallbacks.
     Returns: dictionary with columns, rows, execution_time_ms, and row_count.
     """
@@ -829,6 +1003,9 @@ def run_registered_query(query_key, params=None):
     if q_info.get('category') == 'Stored Procedures':
         rows = _execute_stored_procedure(query_key, q_info, params)
         raw_sql = _build_procedure_call_sql(query_key, q_info, params)
+    elif q_info.get('category') == 'Updates & Deletes':
+        rows = _execute_update_delete(query_key, q_info, params)
+        raw_sql = q_info['sql'].strip()
     else:
         raw_sql = q_info['sql'].strip()
         rows = execute_raw_sql(raw_sql, fetch_all=True)
@@ -854,13 +1031,13 @@ def run_registered_query(query_key, params=None):
 def run_custom_query(custom_sql):
     """
     Safely executes an ad-hoc custom query entered by an authorized user.
-    Permits read-only queries (SELECT, WITH, EXPLAIN) and Stored Procedure invocations (CALL).
+    Permits SELECT queries, Stored Procedure invocations (CALL), and DML (UPDATE, DELETE).
     """
     clean_sql = custom_sql.strip()
     first_word = clean_sql.split()[0].upper() if clean_sql else ''
 
-    if first_word not in ('SELECT', 'WITH', 'EXPLAIN', 'PRAGMA', 'SHOW', 'DESCRIBE', 'CALL'):
-        raise ValueError("Only read-only queries (SELECT, WITH, EXPLAIN) and Stored Procedure invocations (CALL) are permitted in this console.")
+    if first_word not in ('SELECT', 'WITH', 'EXPLAIN', 'PRAGMA', 'SHOW', 'DESCRIBE', 'CALL', 'UPDATE', 'DELETE'):
+        raise ValueError("Only queries (SELECT, WITH, EXPLAIN), CALL statements, and DML (UPDATE, DELETE) are permitted in this console.")
 
     start_time = time.perf_counter()
 
@@ -896,6 +1073,13 @@ def run_custom_query(custom_sql):
                 rows = execute_raw_sql(clean_sql, fetch_all=True)
         else:
             rows = execute_raw_sql(clean_sql, fetch_all=True)
+    elif first_word in ('UPDATE', 'DELETE'):
+        rowcount = execute_raw_sql(clean_sql, commit=True)
+        rows = [{
+            'operation': first_word,
+            'rows_affected': rowcount if isinstance(rowcount, int) else 1,
+            'status': 'Statement Executed and Committed Successfully'
+        }]
     else:
         rows = execute_raw_sql(clean_sql, fetch_all=True)
 

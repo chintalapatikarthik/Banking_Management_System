@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify, flash
+from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for
 from flask_login import login_required
 from app.services.sql_queries import SQL_QUERIES_REGISTRY, run_registered_query, run_custom_query
 
@@ -43,23 +43,8 @@ def index():
 @sql_ops_bp.route('/procedures')
 @login_required
 def procedures():
-    """Dedicated interactive workbench for MySQL 8.x Stored Procedures."""
-    procedure_items = {k: v for k, v in SQL_QUERIES_REGISTRY.items() if v.get('category') == 'Stored Procedures'}
-    
-    selected_key = request.args.get('key', 'proc_1')
-    if selected_key not in procedure_items:
-        selected_key = 'proc_1'
-
-    initial_result = None
-    try:
-        initial_result = run_registered_query(selected_key)
-    except Exception as e:
-        initial_result = {'error': str(e)}
-
-    return render_template('sql_operations/procedures.html', 
-                           procedures=procedure_items, 
-                           selected_key=selected_key,
-                           initial_result=initial_result)
+    """Redirects to SQL Operations catalog with stored procedures active."""
+    return redirect(url_for('sql_ops.index', key='proc_1'))
 
 @sql_ops_bp.route('/api/run/<query_key>', methods=['GET', 'POST'])
 @login_required

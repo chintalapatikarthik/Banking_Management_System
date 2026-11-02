@@ -4,7 +4,7 @@
 [![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12-blue?logo=python&logoColor=white)](https://python.org)
 [![Flask](https://img.shields.io/badge/Framework-Flask%203.1-black?logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
 [![Database](https://img.shields.io/badge/SQL%20Database-MySQL%208.x%20%2F%20SQLite-00758F?logo=mysql&logoColor=white)](https://mysql.com)
-[![Testing](https://img.shields.io/badge/Tests-19%20Passed%20(100%25)-success?logo=pytest&logoColor=white)](https://pytest.org)
+[![Testing](https://img.shields.io/badge/Tests-20%20Passed%20(100%25)-success?logo=pytest&logoColor=white)](https://pytest.org)
 [![UI](https://img.shields.io/badge/Frontend-Bootstrap%205%20%2B%20Chart.js-7952B3?logo=bootstrap&logoColor=white)](https://getbootstrap.com)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
@@ -19,7 +19,7 @@ Built for administrators, branch managers, and banking officers to oversee custo
 2. [Technology Stack](#-technology-stack)
 3. [System Architecture & Directory Structure](#-system-architecture--directory-structure)
 4. [Database Design & Schema](#-database-design--schema)
-5. [SQL Operations & Analytics Registry (30+ Exercises across 7 Categories)](#-sql-operations--analytics-registry)
+5. [SQL Operations & Analytics Registry (36+ Exercises across 8 Categories)](#-sql-operations--analytics-registry)
 6. [Security & Role-Based Access Control](#-security--role-based-access-control)
 7. [Getting Started (Local Installation)](#-getting-started-local-installation)
 8. [Automated Testing Suite](#-automated-testing-suite)
@@ -46,11 +46,12 @@ Built for administrators, branch managers, and banking officers to oversee custo
   - Disburse new loans, track interest rates, aggregate total portfolio liabilities, and rank largest borrowers.
 - **Human Resources & Branches**:
   - Staff onboarding, salary management, branch assignment, and branch liquidity tracking.
-- **Interactive SQL Operations Explorer & Stored Procedures Workbench**:
-  - Live query runner for all 30+ SQL operations, joins, subqueries, views, stored procedures, and aggregate queries from the banking curriculum.
-  - Dedicated **Stored Procedures Workbench** (`/sql-operations/procedures`) to execute, test with dynamic parameters, and inspect DDL definitions for all 5 enterprise MySQL 8.x stored procedures (`sp_customer_accounts`, `sp_account_transactions`, `sp_calculate_total_balance`, `sp_update_balance`, `sp_insert_customer`).
+- **Interactive SQL Operations Explorer**:
+  - Live query runner for all 36+ SQL operations across 8 curriculum categories: Basic Queries, Joins, Aggregates, Subqueries, Database Views, Stored Procedures, Updates & Deletes, and Analytical Reports.
+  - Full integration of all 5 enterprise MySQL 8.x stored procedures (`sp_customer_accounts`, `sp_account_transactions`, `sp_calculate_total_balance`, `sp_update_balance`, `sp_insert_customer`) with interactive parameter forms and DDL definition inspection directly in the SQL Operations catalog.
+  - Interactive DML operations (UPDATE & DELETE) with live database commit and record verification tables.
   - Execution speed benchmarks in milliseconds, rows count indicator, raw SQL syntax preview, DDL/CALL toggle, and dynamic data tables.
-  - **Custom Safe SQL Console**: Allows authorized users to write and execute custom `SELECT` queries and `CALL sp_...` stored procedure invocations with read-only security enforcement.
+  - **Custom Safe SQL Console**: Allows authorized users to write and execute custom `SELECT`, `CALL sp_...`, `UPDATE`, and `DELETE` queries.
 - **Executive Reporting & Export**:
   - 6 tabbed analytical reports with 1-click downloadable CSV exports.
 
@@ -215,7 +216,15 @@ The dedicated **SQL Operations & Analytics** module in the web application execu
 - `proc_4`: Update Account Balance (`sp_update_balance`) - updates balance with negative balance exception handling (`SIGNAL SQLSTATE '45000'`).
 - `proc_5`: Insert New Customer (`sp_insert_customer`) - atomic customer registration returning the generated customer ID.
 
-### 7. Reports & Analytics
+### 7. Updates & Deletes (DML)
+- `update_1`: Update customer address and phone number (`UPDATE customers ... WHERE customer_id = 101`).
+- `update_2`: 10% annual salary appraisal for branch managers (`UPDATE employees SET salary = ROUND(salary * 1.10, 2)`).
+- `update_3`: Suspend low-balance inactive accounts (`UPDATE accounts SET account_status = 'Suspended'`).
+- `update_4`: Interest rate concession on high-value loans (`UPDATE loans SET interest_rate = ROUND(interest_rate - 0.25, 2)`).
+- `delete_1`: Purge dormant zero-balance accounts (`DELETE FROM accounts WHERE balance = 0.00`).
+- `delete_2`: Purge temporary test customer leads (`DELETE FROM customers WHERE email LIKE '%@test.com'`).
+
+### 8. Reports & Analytics
 - `report_1`: Top 5 customers ranked by aggregate balance.
 - `report_2`: Most active customers by transaction count and volume.
 - `report_3`: Monthly transaction volume breakdown by month and type.

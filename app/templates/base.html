@@ -71,13 +71,9 @@
                 </a>
 
                 <div class="nav-section-title">Analytics & SQL</div>
-                <a href="{{ url_for('sql_ops.index') }}" class="sidebar-link {% if request.endpoint == 'sql_ops.index' %}active{% endif %}">
+                <a href="{{ url_for('sql_ops.index') }}" class="sidebar-link {% if 'sql_ops' in request.endpoint %}active{% endif %}">
                     <i class="bi bi-terminal-fill"></i>
                     <span>SQL Operations</span>
-                </a>
-                <a href="{{ url_for('sql_ops.procedures') }}" class="sidebar-link {% if request.endpoint == 'sql_ops.procedures' %}active{% endif %}">
-                    <i class="bi bi-gear-wide-connected"></i>
-                    <span>Stored Procedures</span>
                 </a>
                 <a href="{{ url_for('report.index') }}" class="sidebar-link {% if 'report' in request.endpoint %}active{% endif %}">
                     <i class="bi bi-file-earmark-bar-graph-fill"></i>
