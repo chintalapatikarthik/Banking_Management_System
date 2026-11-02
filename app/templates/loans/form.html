@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Disburse New Loan{% endblock %}
+{% block page_title %}Loan Disbursal Application{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="card-header bg-white border-bottom py-3 d-flex align-items-center justify-content-between">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-cash-coin text-danger me-2"></i>New Loan Application</h5>
+                <a href="{{ url_for('loan.list_loans') }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Loans
+                </a>
+            </div>
+
+            <div class="card-body p-4">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="customer_id" class="form-label small fw-semibold text-secondary">Borrower (Customer) <span class="text-danger">*</span></label>
+                        <select class="form-select" id="customer_id" name="customer_id" required>
+                            <option value="">Select Existing Customer...</option>
+                            {% for c in customers %}
+                            <option value="{{ c.customer_id }}">
+                                {{ c.name }} (ID: #{{ c.customer_id }} - {{ c.email }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="loan_amount" class="form-label small fw-semibold text-secondary">Principal Loan Amount (₹) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-danger fw-bold">₹</span>
+                                <input type="number" step="1000" min="5000" class="form-control" id="loan_amount" name="loan_amount" required placeholder="500000.00">
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="interest_rate" class="form-label small fw-semibold text-secondary">Annual Interest Rate (%) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="number" step="0.05" min="1" max="30" class="form-control" id="interest_rate" name="interest_rate" value="8.50" required>
+                                <span class="input-group-text bg-light">% p.a.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="loan_date" class="form-label small fw-semibold text-secondary">Loan Disbursal Date</label>
+                        <input type="date" class="form-control" id="loan_date" name="loan_date" value="{{ loan.loan_date }}">
+                    </div>
+
+                    <div class="pt-3 border-top d-flex justify-content-end gap-2">
+                        <a href="{{ url_for('loan.list_loans') }}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-danger px-4">
+                            <i class="bi bi-check2-circle me-1"></i> Disburse Loan Facility
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

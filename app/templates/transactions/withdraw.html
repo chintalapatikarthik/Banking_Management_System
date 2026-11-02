@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Withdraw Funds{% endblock %}
+{% block page_title %}Cash & ATM Withdrawal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="card-header bg-white border-bottom py-3 d-flex align-items-center justify-content-between">
+                <h5 class="mb-0 fw-bold text-danger"><i class="bi bi-arrow-up-circle text-danger me-2"></i>Account Withdrawal</h5>
+                <a href="{{ url_for('transaction.list_transactions') }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Ledger
+                </a>
+            </div>
+
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('transaction.withdraw') }}">
+                    <input type="hidden" id="opType" value="withdraw">
+
+                    <div class="mb-3">
+                        <label for="sourceAccountSelect" class="form-label small fw-semibold text-secondary">Source Account <span class="text-danger">*</span></label>
+                        <select class="form-select" id="sourceAccountSelect" name="account_id" required>
+                            <option value="">Select Active Account...</option>
+                            {% for a in accounts %}
+                            <option value="{{ a.account_id }}" data-balance="{{ a.balance }}" {% if prefill_acc == a.account_id %}selected{% endif %}>
+                                A/C #{{ a.account_id }} - {{ a.customer_name }} ({{ a.account_type }}) | Available: ₹{{ "{:,.2f}".format(a.balance) }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="transAmount" class="form-label small fw-semibold text-secondary">Withdrawal Amount (₹) <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-danger fw-bold">₹</span>
+                            <input type="number" step="0.01" min="1" class="form-control" id="transAmount" name="amount" required placeholder="0.00">
+                        </div>
+                    </div>
+
+                    <!-- Live Calculation & Overdraft Detection Preview -->
+                    <div class="alert alert-light border rounded-3 p-3 mb-3" id="balancePreview">
+                        <span class="text-muted small">Select an account and enter amount to check sufficient funds</span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="description" class="form-label small fw-semibold text-secondary">Withdrawal Remarks</label>
+                        <input type="text" class="form-control" id="description" name="description" placeholder="e.g. Counter Cash Withdrawal / ATM Disbursement">
+                    </div>
+
+                    <div class="pt-3 border-top d-flex justify-content-end gap-2">
+                        <a href="{{ url_for('transaction.list_transactions') }}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-danger px-4">
+                            <i class="bi bi-check2-circle me-1"></i> Authorize Withdrawal
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}SQL Operations & Analytics Explorer{% endblock %}
+{% block page_title %}SQL Operations & Database Analytics{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Left Column: Query Exercises Library (Categorized) -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+            <div class="card-header bg-white border-bottom py-3 d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-journal-code text-primary me-2"></i>SQL Exercise Catalog</h6>
+                    <small class="text-muted">{{ total_queries }} Interactive Real-Time Exercises</small>
+                </div>
+            </div>
+
+            <div class="card-body p-2" style="max-height: 800px; overflow-y: auto;">
+                <div class="accordion accordion-flush" id="sqlAccordion">
+                    {% for cat_name, queries in categories.items() %}
+                    <div class="accordion-item border-0 mb-2 rounded-3 overflow-hidden shadow-sm">
+                        <h2 class="accordion-header" id="heading{{ loop.index }}">
+                            <button class="accordion-button py-2 px-3 fw-semibold small bg-light {% if not loop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}">
+                                <i class="bi {% if 'Basic' in cat_name %}bi-check2-square text-primary{% elif 'Join' in cat_name %}bi-intersect text-success{% elif 'Aggregate' in cat_name %}bi-calculator text-warning{% elif 'Subquery' in cat_name %}bi-layers text-danger{% elif 'View' in cat_name %}bi-table text-info{% else %}bi-graph-up-arrow text-purple{% endif %} me-2"></i>
+                                {{ cat_name }} ({{ queries|length }})
+                            </button>
+                        </h2>
+                        <div id="collapse{{ loop.index }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" data-bs-parent="#sqlAccordion">
+                            <div class="accordion-body p-1 bg-white">
+                                {% for q in queries %}
+                                <button type="button" 
+                                        class="query-item-btn {% if q.key == 'basic_1' %}active{% endif %}" 
+                                        data-key="{{ q.key }}"
+                                        onclick="selectQuery('{{ q.key }}', this)">
+                                    <span class="text-truncate">{{ q.title }}</span>
+                                    <i class="bi bi-chevron-right text-muted small ms-2"></i>
+                                </button>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Interactive Query Runner & Results Table -->
+    <div class="col-lg-8">
+        <!-- Live Exercise Display -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+            <div class="card-header bg-white border-bottom py-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <div>
+                    <span class="badge bg-primary-subtle text-primary border mb-1" id="queryCategoryBadge">Basic Queries</span>
+                    <h5 class="mb-0 fw-bold brand-font" id="queryTitleDisplay">Accounts with Balance Greater than 50,000</h5>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="copySqlBtn" onclick="copySql()">
+                        <i class="bi bi-clipboard"></i> Copy SQL
+                    </button>
+                    <button type="button" class="btn btn-primary-custom btn-sm" id="runQueryBtn" onclick="executeCurrentQuery()">
+                        <i class="bi bi-play-fill"></i> Execute SQL Query
+                    </button>
+                </div>
+            </div>
+
+            <div class="card-body p-4">
+                <p class="text-muted small mb-3" id="queryDescriptionDisplay">
+                    Filters all bank accounts where the available balance exceeds ₹50,000 using WHERE clause.
+                </p>
+
+                <!-- Code box -->
+                <div class="mb-3 position-relative">
+                    <pre class="sql-code-box mb-0" id="sqlCodeDisplay">SELECT 
+    account_id,
+    customer_id,
+    account_type,
+    balance,
+    opening_date,
+    account_status
+FROM accounts
+WHERE balance > 50000.00
+ORDER BY balance DESC;</pre>
+                </div>
+
+                <!-- Execution Metrics Pill -->
+                <div class="d-flex flex-wrap align-items-center justify-content-between bg-light p-2 px-3 rounded-3 border small mb-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <span><i class="bi bi-stopwatch text-primary me-1"></i>Execution Time: <strong id="execTimeDisplay">{{ initial_result.execution_time_ms if initial_result else '0.00' }} ms</strong></span>
+                        <span><i class="bi bi-list-ol text-success me-1"></i>Rows Returned: <strong id="rowCountDisplay">{{ initial_result.row_count if initial_result else 0 }}</strong></span>
+                    </div>
+                    <span class="text-muted"><i class="bi bi-database-check text-info me-1"></i>Live SQL Database Engine</span>
+                </div>
+
+                <!-- Dynamic Results Data Table -->
+                <div class="border rounded-3 overflow-hidden">
+                    <div class="table-responsive" style="max-height: 380px;">
+                        <table class="table custom-table align-middle mb-0" id="resultsTable">
+                            <thead class="sticky-top">
+                                <tr id="tableHeaderRow">
+                                    {% if initial_result and initial_result.columns %}
+                                        {% for col in initial_result.columns %}
+                                        <th>{{ col }}</th>
+                                        {% endfor %}
+                                    {% else %}
+                                        <th>Output</th>
+                                    {% endif %}
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                                {% if initial_result and initial_result.rows %}
+                                    {% for row in initial_result.rows %}
+                                    <tr>
+                                        {% for col in initial_result.columns %}
+                                        <td>{{ row[col] }}</td>
+                                        {% endfor %}
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr><td class="text-center py-4 text-muted">Click 'Execute SQL Query' to run this query.</td></tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Safe SQL Console -->
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="card-header bg-white border-bottom py-3 d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-terminal-fill text-dark me-2"></i>Custom SQL Query Console</h6>
+                    <small class="text-muted">Execute ad-hoc SELECT queries directly against the database</small>
+                </div>
+                <span class="badge bg-secondary-subtle text-secondary border">Read-Only Safety Active</span>
+            </div>
+            <div class="card-body p-4">
+                <div class="mb-3">
+                    <textarea class="form-control font-monospace" id="customSqlInput" rows="3" placeholder="SELECT c.name, a.balance FROM customers c JOIN accounts a ON c.customer_id = a.customer_id WHERE a.balance > 100000;"></textarea>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">Supported statements: SELECT, WITH, EXPLAIN against active database tables.</small>
+                    <button type="button" class="btn btn-dark btn-sm" onclick="runCustomSql()">
+                        <i class="bi bi-lightning-charge me-1"></i> Run Custom SQL
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let currentQueryKey = 'basic_1';
+
+// Switch active exercise
+function selectQuery(key, btnElement) {
+    currentQueryKey = key;
+    document.querySelectorAll('.query-item-btn').forEach(btn => btn.classList.remove('active'));
+    btnElement.classList.add('active');
+    executeCurrentQuery();
+}
+
+// Execute query via API
+function executeCurrentQuery() {
+    const runBtn = document.getElementById('runQueryBtn');
+    runBtn.disabled = true;
+    runBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Executing...';
+
+    fetch(`/sql-operations/api/run/${currentQueryKey}`)
+        .then(res => res.json())
+        .then(res => {
+            runBtn.disabled = false;
+            runBtn.innerHTML = '<i class="bi bi-play-fill"></i> Execute SQL Query';
+
+            if (!res.success) {
+                alert('Query Execution Error: ' + res.error);
+                return;
+            }
+
+            renderQueryResult(res.data);
+        })
+        .catch(err => {
+            runBtn.disabled = false;
+            runBtn.innerHTML = '<i class="bi bi-play-fill"></i> Execute SQL Query';
+            alert('Request Failed: ' + err.message);
+        });
+}
+
+// Render result payload into DOM
+function renderQueryResult(data) {
+    document.getElementById('queryTitleDisplay').textContent = data.title;
+    document.getElementById('queryCategoryBadge').textContent = data.category;
+    document.getElementById('queryDescriptionDisplay').textContent = data.description;
+    document.getElementById('sqlCodeDisplay').textContent = data.sql;
+    document.getElementById('execTimeDisplay').textContent = `${data.execution_time_ms} ms`;
+    document.getElementById('rowCountDisplay').textContent = data.row_count;
+
+    renderTable(data.columns, data.rows);
+}
+
+// Render dynamic table headers & rows
+function renderTable(columns, rows) {
+    const thead = document.getElementById('tableHeaderRow');
+    const tbody = document.getElementById('tableBody');
+
+    if (!columns || columns.length === 0) {
+        thead.innerHTML = '<th>Result</th>';
+        tbody.innerHTML = '<tr><td class="text-center py-4 text-muted">Query executed successfully (0 rows returned).</td></tr>';
+        return;
+    }
+
+    thead.innerHTML = columns.map(c => `<th>${c}</th>`).join('');
+    
+    if (!rows || rows.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="${columns.length}" class="text-center py-4 text-muted">No records found.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = rows.map(r => {
+        return '<tr>' + columns.map(c => {
+            const val = r[c] !== null && r[c] !== undefined ? r[c] : '<span class="text-muted">NULL</span>';
+            return `<td>${val}</td>`;
+        }).join('') + '</tr>';
+    }).join('');
+}
+
+// Custom SQL Runner
+function runCustomSql() {
+    const sql = document.getElementById('customSqlInput').value.trim();
+    if (!sql) {
+        alert('Please enter a SQL query.');
+        return;
+    }
+
+    fetch('/sql-operations/api/custom', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sql: sql })
+    })
+    .then(res => res.json())
+    .then(res => {
+        if (!res.success) {
+            alert('Custom Query Error: ' + res.error);
+            return;
+        }
+
+        const data = res.data;
+        document.getElementById('queryTitleDisplay').textContent = 'Custom User SQL Execution';
+        document.getElementById('queryCategoryBadge').textContent = 'Custom Console';
+        document.getElementById('queryDescriptionDisplay').textContent = 'Ad-hoc query executed safely against live schema.';
+        document.getElementById('sqlCodeDisplay').textContent = data.sql;
+        document.getElementById('execTimeDisplay').textContent = `${data.execution_time_ms} ms`;
+        document.getElementById('rowCountDisplay').textContent = data.row_count;
+
+        renderTable(data.columns, data.rows);
+    })
+    .catch(err => {
+        alert('Execution failed: ' + err.message);
+    });
+}
+
+function copySql() {
+    const sql = document.getElementById('sqlCodeDisplay').textContent;
+    copyToClipboard(sql, document.getElementById('copySqlBtn'));
+}
+</script>
+{% endblock %}

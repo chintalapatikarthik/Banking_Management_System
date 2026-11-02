@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Loan Portfolio{% endblock %}
+{% block page_title %}Loan & Credit Facilities{% endblock %}
+
+{% block content %}
+<!-- Loan Aggregate KPI Ribbon -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <span class="stat-label">Total Loans Disbursed</span>
+            <div class="stat-value text-danger">{{ total_amount | currency }}</div>
+            <div class="text-muted small mt-1">Outstanding Bank Portfolio</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <span class="stat-label">Total Credit Accounts</span>
+            <div class="stat-value text-primary">{{ loans|length }}</div>
+            <div class="text-muted small mt-1">Active Borrowers</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <span class="stat-label">Average Interest Rate</span>
+            <div class="stat-value text-warning">{{ avg_interest }}%</div>
+            <div class="text-muted small mt-1">Weighted Portfolio Yield</div>
+        </div>
+    </div>
+</div>
+
+<div class="card card-table-wrapper mb-4">
+    <div class="card-header-custom">
+        <div class="d-flex align-items-center gap-2">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-cash-stack text-danger me-2"></i>Active Loans Portfolio</h5>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ url_for('loan.create_loan') }}" class="btn btn-primary-custom btn-sm">
+                <i class="bi bi-plus-circle me-1"></i> Disburse New Loan
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="p-3 bg-light border-bottom">
+        <form method="GET" action="{{ url_for('loan.list_loans') }}" class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="search" class="form-control" placeholder="Search by borrower name, loan ID..." value="{{ search }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <input type="date" name="start_date" class="form-control form-control-sm" title="From Date" value="{{ start_date }}">
+            </div>
+            <div class="col-md-3">
+                <input type="date" name="end_date" class="form-control form-control-sm" title="To Date" value="{{ end_date }}">
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-sm btn-dark w-100"><i class="bi bi-filter"></i> Filter</button>
+                {% if search or start_date or end_date %}
+                <a href="{{ url_for('loan.list_loans') }}" class="btn btn-sm btn-outline-secondary" title="Reset"><i class="bi bi-arrow-counterclockwise"></i></a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Loans Table -->
+    <div class="table-responsive">
+        <table class="table custom-table align-middle">
+            <thead>
+                <tr>
+                    <th>Loan #</th>
+                    <th>Borrower Name</th>
+                    <th>Customer ID</th>
+                    <th>Principal Loan Amount</th>
+                    <th>Interest Rate</th>
+                    <th>Disbursal Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if loans %}
+                    {% for l in loans %}
+                    <tr>
+                        <td class="fw-bold">#{{ l.loan_id }}</td>
+                        <td>
+                            <a href="{{ url_for('customer.view_customer', customer_id=l.customer_id) }}" class="fw-semibold text-primary text-decoration-none">
+                                {{ l.customer_name }}
+                            </a>
+                        </td>
+                        <td class="text-muted">#{{ l.customer_id }}</td>
+                        <td class="fw-bold text-danger fs-6">{{ l.loan_amount | currency }}</td>
+                        <td><span class="badge bg-warning-subtle text-dark border">{{ l.interest_rate }}% p.a.</span></td>
+                        <td class="text-muted small">{{ l.loan_date }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="bi bi-cash-coin fs-1 d-block mb-2 text-secondary"></i>
+                            No loans registered matching your search criteria.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

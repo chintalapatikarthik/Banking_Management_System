@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Transaction Ledger{% endblock %}
+{% block page_title %}Financial Transaction History{% endblock %}
+
+{% block content %}
+<div class="card card-table-wrapper mb-4">
+    <div class="card-header-custom">
+        <div class="d-flex align-items-center gap-2">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-arrow-left-right text-primary me-2"></i>Global Transaction Ledger</h5>
+            <span class="badge bg-primary-subtle text-primary border">{{ transactions|length }} Records</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ url_for('transaction.deposit') }}" class="btn btn-outline-success btn-sm">
+                <i class="bi bi-arrow-down-circle me-1"></i> Deposit
+            </a>
+            <a href="{{ url_for('transaction.withdraw') }}" class="btn btn-outline-danger btn-sm">
+                <i class="bi bi-arrow-up-circle me-1"></i> Withdraw
+            </a>
+            <a href="{{ url_for('transaction.transfer') }}" class="btn btn-primary-custom btn-sm">
+                <i class="bi bi-arrow-left-right me-1"></i> Transfer
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="p-3 bg-light border-bottom">
+        <form method="GET" action="{{ url_for('transaction.list_transactions') }}" class="row g-2 align-items-center">
+            <div class="col-md-3">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="search" class="form-control" placeholder="Search Tx ID, Account, Customer..." value="{{ search }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="transaction_type" class="form-select form-select-sm">
+                    <option value="">All Transaction Types</option>
+                    <option value="Deposit" {% if tx_type == 'Deposit' %}selected{% endif %}>Deposit</option>
+                    <option value="Withdrawal" {% if tx_type == 'Withdrawal' %}selected{% endif %}>Withdrawal</option>
+                    <option value="Transfer Debit" {% if tx_type == 'Transfer Debit' %}selected{% endif %}>Transfer Debit</option>
+                    <option value="Transfer Credit" {% if tx_type == 'Transfer Credit' %}selected{% endif %}>Transfer Credit</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="start_date" class="form-control form-control-sm" title="From Date" value="{{ start_date }}">
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="end_date" class="form-control form-control-sm" title="To Date" value="{{ end_date }}">
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-sm btn-dark w-100"><i class="bi bi-filter"></i> Filter</button>
+                {% if search or tx_type or start_date or end_date %}
+                <a href="{{ url_for('transaction.list_transactions') }}" class="btn btn-sm btn-outline-secondary" title="Reset"><i class="bi bi-arrow-counterclockwise"></i></a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Transactions Table -->
+    <div class="table-responsive">
+        <table class="table custom-table align-middle">
+            <thead>
+                <tr>
+                    <th>Tx ID</th>
+                    <th>Date</th>
+                    <th>Account #</th>
+                    <th>Customer Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th class="text-end">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if transactions %}
+                    {% for t in transactions %}
+                    <tr>
+                        <td class="fw-bold text-muted">#{{ t.transaction_id }}</td>
+                        <td class="small">{{ t.transaction_date }}</td>
+                        <td>
+                            <a href="{{ url_for('account.view_account', account_id=t.account_id) }}" class="text-decoration-none fw-semibold text-primary">
+                                #{{ t.account_id }}
+                            </a>
+                        </td>
+                        <td>{{ t.customer_name }}</td>
+                        <td>
+                            {% if 'Deposit' in t.transaction_type or 'Credit' in t.transaction_type %}
+                            <span class="badge bg-success-subtle text-success border"><i class="bi bi-arrow-down-left"></i> {{ t.transaction_type }}</span>
+                            {% else %}
+                            <span class="badge bg-danger-subtle text-danger border"><i class="bi bi-arrow-up-right"></i> {{ t.transaction_type }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-muted small">{{ t.description }}</td>
+                        <td class="text-end fw-bold fs-6 {% if 'Deposit' in t.transaction_type or 'Credit' in t.transaction_type %}text-success{% else %}text-danger{% endif %}">
+                            {% if 'Deposit' in t.transaction_type or 'Credit' in t.transaction_type %}+{% else %}-{% endif %}{{ t.amount | currency }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="bi bi-clock-history fs-1 d-block mb-2 text-secondary"></i>
+                            No transactions found matching the filter query.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

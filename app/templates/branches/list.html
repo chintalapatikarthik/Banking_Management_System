@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Branch Network{% endblock %}
+{% block page_title %}Bank Branch Network{% endblock %}
+
+{% block content %}
+<div class="card card-table-wrapper mb-4">
+    <div class="card-header-custom">
+        <div class="d-flex align-items-center gap-2">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-building text-primary me-2"></i>Operating Branches</h5>
+            <span class="badge bg-primary-subtle text-primary border">{{ branches|length }} Locations</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            {% if current_user.is_admin %}
+            <a href="{{ url_for('branch.create_branch') }}" class="btn btn-primary-custom btn-sm">
+                <i class="bi bi-plus-circle me-1"></i> Add New Branch
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="p-3 bg-light border-bottom">
+        <form method="GET" action="{{ url_for('branch.list_branches') }}" class="row g-2 align-items-center">
+            <div class="col-md-6">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="search" class="form-control" placeholder="Search by branch name or city location..." value="{{ search }}">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-sm btn-dark w-100"><i class="bi bi-filter"></i> Search</button>
+            </div>
+            {% if search %}
+            <div class="col-md-2">
+                <a href="{{ url_for('branch.list_branches') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-counterclockwise"></i> Reset</a>
+            </div>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Branches Grid / Table -->
+    <div class="table-responsive">
+        <table class="table custom-table align-middle">
+            <thead>
+                <tr>
+                    <th>Branch ID</th>
+                    <th>Branch Name</th>
+                    <th>City / Location</th>
+                    <th>Accounts Count</th>
+                    <th>Staff Assigned</th>
+                    <th>Total Branch Deposits</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if branches %}
+                    {% for b in branches %}
+                    <tr>
+                        <td class="fw-bold text-muted">#{{ b.branch_id }}</td>
+                        <td>
+                            <a href="{{ url_for('branch.view_branch', branch_id=b.branch_id) }}" class="fw-semibold text-primary text-decoration-none">
+                                {{ b.branch_name }}
+                            </a>
+                        </td>
+                        <td><span class="badge bg-light text-dark border"><i class="bi bi-geo-alt me-1"></i>{{ b.location }}</span></td>
+                        <td>{{ b.total_accounts }} accounts</td>
+                        <td>{{ b.total_employees }} personnel</td>
+                        <td class="fw-bold text-success fs-6">{{ b.total_deposits | currency }}</td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('branch.view_branch', branch_id=b.branch_id) }}" class="btn btn-outline-primary" title="View Branch">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% if current_user.is_admin %}
+                                <a href="{{ url_for('branch.edit_branch', branch_id=b.branch_id) }}" class="btn btn-outline-secondary" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="bi bi-building-x fs-1 d-block mb-2 text-secondary"></i>
+                            No branches found matching your search.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

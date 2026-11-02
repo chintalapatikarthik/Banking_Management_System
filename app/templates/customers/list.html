@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Customers Directory{% endblock %}
+{% block page_title %}Customer Management{% endblock %}
+
+{% block content %}
+<div class="card card-table-wrapper mb-4">
+    <div class="card-header-custom">
+        <div class="d-flex align-items-center gap-2">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-people-fill text-primary me-2"></i>Customer Directory</h5>
+            <span class="badge bg-primary-subtle text-primary border">{{ customers|length }} Records</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ url_for('customer.create_customer') }}" class="btn btn-primary-custom btn-sm">
+                <i class="bi bi-person-plus me-1"></i> Add New Customer
+            </a>
+        </div>
+    </div>
+
+    <!-- Search & Filter Bar -->
+    <div class="p-3 bg-light border-bottom">
+        <form method="GET" action="{{ url_for('customer.list_customers') }}" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="search" class="form-control" placeholder="Search by customer name or ID..." value="{{ search }}">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select name="location" class="form-select form-select-sm">
+                    <option value="">All Locations / Cities</option>
+                    {% for city in cities %}
+                    <option value="{{ city }}" {% if location == city %}selected{% endif %}>{{ city }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-sm btn-dark w-100"><i class="bi bi-filter"></i> Apply Filter</button>
+                {% if search or location %}
+                <a href="{{ url_for('customer.list_customers') }}" class="btn btn-sm btn-outline-secondary" title="Reset Filters"><i class="bi bi-arrow-counterclockwise"></i></a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Customers Table -->
+    <div class="table-responsive">
+        <table class="table custom-table align-middle">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Customer Name</th>
+                    <th>Email Address</th>
+                    <th>Phone</th>
+                    <th>Location / Address</th>
+                    <th>Accounts</th>
+                    <th>Total Deposits</th>
+                    <th>Registered</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if customers %}
+                    {% for c in customers %}
+                    <tr>
+                        <td class="fw-bold text-secondary">#{{ c.customer_id }}</td>
+                        <td>
+                            <a href="{{ url_for('customer.view_customer', customer_id=c.customer_id) }}" class="text-decoration-none fw-semibold text-primary">
+                                {{ c.name }}
+                            </a>
+                        </td>
+                        <td><i class="bi bi-envelope text-muted me-1"></i>{{ c.email }}</td>
+                        <td>{{ c.phone or '-' }}</td>
+                        <td><i class="bi bi-geo-alt text-muted me-1"></i>{{ c.address or 'N/A' }}</td>
+                        <td>
+                            <span class="badge bg-secondary-subtle text-secondary border">
+                                {{ c.accounts_count }} a/c
+                            </span>
+                        </td>
+                        <td class="fw-semibold text-success">{{ c.total_balance | currency }}</td>
+                        <td class="text-muted small">{{ c.registration_date }}</td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('customer.view_customer', customer_id=c.customer_id) }}" class="btn btn-outline-primary" title="View Profile">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{{ url_for('customer.edit_customer', customer_id=c.customer_id) }}" class="btn btn-outline-secondary" title="Edit Customer">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                {% if current_user.is_admin %}
+                                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ c.customer_id }}" title="Delete Customer">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+
+                            {% if current_user.is_admin %}
+                            <!-- Delete Confirmation Modal -->
+                            <div class="modal fade text-start" id="deleteModal{{ c.customer_id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Deletion</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>Are you sure you want to permanently delete customer <strong>{{ c.name }} (ID: #{{ c.customer_id }})</strong>?</p>
+                                            <p class="small text-muted mb-0">Note: Deletion will be rejected if the customer still holds accounts with positive balances.</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                                            <form method="POST" action="{{ url_for('customer.delete_customer', customer_id=c.customer_id) }}">
+                                                <button type="submit" class="btn btn-danger btn-sm">Yes, Delete Customer</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="9" class="text-center py-5 text-muted">
+                            <i class="bi bi-person-x fs-1 d-block mb-2 text-secondary"></i>
+                            No customers found matching your criteria.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

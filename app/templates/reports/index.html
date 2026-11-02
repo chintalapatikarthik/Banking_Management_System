@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}Financial Reports & Intelligence{% endblock %}
+{% block page_title %}Executive Reporting & Analytics{% endblock %}
+
+{% block content %}
+<div class="card card-table-wrapper mb-4">
+    <!-- Report Navigation Tabs -->
+    <div class="card-header bg-white border-bottom p-0">
+        <ul class="nav nav-tabs border-0 px-3 pt-2" id="reportTabs" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link py-3 px-3 active fw-semibold small" id="top-balance-tab" data-bs-toggle="tab" data-bs-target="#top-balance" type="button">
+                    <i class="bi bi-trophy text-warning me-1"></i> Top 5 High Net-Worth
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link py-3 px-3 fw-semibold small" id="active-cust-tab" data-bs-toggle="tab" data-bs-target="#active-cust" type="button">
+                    <i class="bi bi-activity text-primary me-1"></i> Most Active Customers
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link py-3 px-3 fw-semibold small" id="monthly-tx-tab" data-bs-toggle="tab" data-bs-target="#monthly-tx" type="button">
+                    <i class="bi bi-calendar-month text-success me-1"></i> Monthly Activity
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link py-3 px-3 fw-semibold small" id="branch-dep-tab" data-bs-toggle="tab" data-bs-target="#branch-dep" type="button">
+                    <i class="bi bi-buildings text-info me-1"></i> Branch Deposits
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link py-3 px-3 fw-semibold small" id="tx-analysis-tab" data-bs-toggle="tab" data-bs-target="#tx-analysis" type="button">
+                    <i class="bi bi-pie-chart text-purple me-1"></i> Credit vs Debit Analysis
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link py-3 px-3 fw-semibold small" id="high-loans-tab" data-bs-toggle="tab" data-bs-target="#high-loans" type="button">
+                    <i class="bi bi-cash-stack text-danger me-1"></i> Largest Borrowers
+                </button>
+            </li>
+        </ul>
+    </div>
+
+    <div class="tab-content p-4" id="reportTabsContent">
+        <!-- 1. Top Balance -->
+        <div class="tab-pane fade show active" id="top-balance" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h6 class="fw-bold mb-1">{{ reports.top_balance.title }}</h6>
+                    <small class="text-muted">{{ reports.top_balance.description }}</small>
+                </div>
+                <a href="{{ url_for('report.export_csv', report_key='top_balance') }}" class="btn btn-outline-success btn-sm">
+                    <i class="bi bi-download me-1"></i> Download CSV Report
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="table custom-table align-middle">
+                    <thead>
+                        <tr>
+                            {% for col in reports.top_balance.columns %}
+                            <th>{{ col }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in reports.top_balance.rows %}
+                        <tr>
+                            {% for col in reports.top_balance.columns %}
+                            <td>{{ row[col] }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 2. Active Customers -->
+        <div class="tab-pane fade" id="active-cust" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h6 class="fw-bold mb-1">{{ reports.active_customers.title }}</h6>
+                    <small class="text-muted">{{ reports.active_customers.description }}</small>
+                </div>
+                <a href="{{ url_for('report.export_csv', report_key='active_customers') }}" class="btn btn-outline-success btn-sm">
+                    <i class="bi bi-download me-1"></i> Download CSV Report
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="table custom-table align-middle">
+                    <thead>
+                        <tr>
+                            {% for col in reports.active_customers.columns %}
+                            <th>{{ col }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in reports.active_customers.rows %}
+                        <tr>
+                            {% for col in reports.active_customers.columns %}
+                            <td>{{ row[col] }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 3. Monthly Transactions -->
+        <div class="tab-pane fade" id="monthly-tx" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h6 class="fw-bold mb-1">{{ reports.monthly_transactions.title }}</h6>
+                    <small class="text-muted">{{ reports.monthly_transactions.description }}</small>
+                </div>
+                <a href="{{ url_for('report.export_csv', report_key='monthly_transactions') }}" class="btn btn-outline-success btn-sm">
+                    <i class="bi bi-download me-1"></i> Download CSV Report
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="table custom-table align-middle">
+                    <thead>
+                        <tr>
+                            {% for col in reports.monthly_transactions.columns %}
+                            <th>{{ col }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in reports.monthly_transactions.rows %}
+                        <tr>
+                            {% for col in reports.monthly_transactions.columns %}
+                            <td>{{ row[col] }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 4. Branch Deposits -->
+        <div class="tab-pane fade" id="branch-dep" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h6 class="fw-bold mb-1">{{ reports.branch_deposits.title }}</h6>
+                    <small class="text-muted">{{ reports.branch_deposits.description }}</small>
+                </div>
+                <a href="{{ url_for('report.export_csv', report_key='branch_deposits') }}" class="btn btn-outline-success btn-sm">
+                    <i class="bi bi-download me-1"></i> Download CSV Report
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="table custom-table align-middle">
+                    <thead>
+                        <tr>
+                            {% for col in reports.branch_deposits.columns %}
+                            <th>{{ col }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in reports.branch_deposits.rows %}
+                        <tr>
+                            {% for col in reports.branch_deposits.columns %}
+                            <td>{{ row[col] }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 5. Transaction Analysis -->
+        <div class="tab-pane fade" id="tx-analysis" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h6 class="fw-bold mb-1">{{ reports.tx_analysis.title }}</h6>
+                    <small class="text-muted">{{ reports.tx_analysis.description }}</small>
+                </div>
+                <a href="{{ url_for('report.export_csv', report_key='tx_analysis') }}" class="btn btn-outline-success btn-sm">
+                    <i class="bi bi-download me-1"></i> Download CSV Report
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="table custom-table align-middle">
+                    <thead>
+                        <tr>
+                            {% for col in reports.tx_analysis.columns %}
+                            <th>{{ col }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in reports.tx_analysis.rows %}
+                        <tr>
+                            {% for col in reports.tx_analysis.columns %}
+                            <td>{{ row[col] }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 6. High Loans -->
+        <div class="tab-pane fade" id="high-loans" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h6 class="fw-bold mb-1">{{ reports.high_loans.title }}</h6>
+                    <small class="text-muted">{{ reports.high_loans.description }}</small>
+                </div>
+                <a href="{{ url_for('report.export_csv', report_key='high_loans') }}" class="btn btn-outline-success btn-sm">
+                    <i class="bi bi-download me-1"></i> Download CSV Report
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="table custom-table align-middle">
+                    <thead>
+                        <tr>
+                            {% for col in reports.high_loans.columns %}
+                            <th>{{ col }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in reports.high_loans.rows %}
+                        <tr>
+                            {% for col in reports.high_loans.columns %}
+                            <td>{{ row[col] }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

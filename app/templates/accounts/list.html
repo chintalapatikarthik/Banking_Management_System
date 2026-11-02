@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Accounts Portfolio{% endblock %}
+{% block page_title %}Account Management{% endblock %}
+
+{% block content %}
+<div class="card card-table-wrapper mb-4">
+    <div class="card-header-custom">
+        <div class="d-flex align-items-center gap-2">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-wallet2 text-primary me-2"></i>Bank Accounts Portfolio</h5>
+            <span class="badge bg-primary-subtle text-primary border">{{ accounts|length }} Accounts</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ url_for('account.create_account') }}" class="btn btn-primary-custom btn-sm">
+                <i class="bi bi-plus-circle me-1"></i> Open New Account
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="p-3 bg-light border-bottom">
+        <form method="GET" action="{{ url_for('account.list_accounts') }}" class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="search" class="form-control" placeholder="Search by Account ID, Customer Name..." value="{{ search }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="account_type" class="form-select form-select-sm">
+                    <option value="">All Account Types</option>
+                    <option value="Savings" {% if account_type == 'Savings' %}selected{% endif %}>Savings Account</option>
+                    <option value="Current" {% if account_type == 'Current' %}selected{% endif %}>Current Account</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="account_status" class="form-select form-select-sm">
+                    <option value="">All Statuses</option>
+                    <option value="Active" {% if account_status == 'Active' %}selected{% endif %}>Active</option>
+                    <option value="Inactive" {% if account_status == 'Inactive' %}selected{% endif %}>Inactive</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-sm btn-dark w-100"><i class="bi bi-funnel"></i> Filter</button>
+                {% if search or account_type or account_status %}
+                <a href="{{ url_for('account.list_accounts') }}" class="btn btn-sm btn-outline-secondary" title="Reset"><i class="bi bi-arrow-counterclockwise"></i></a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Accounts Table -->
+    <div class="table-responsive">
+        <table class="table custom-table align-middle">
+            <thead>
+                <tr>
+                    <th>Account #</th>
+                    <th>Account Holder</th>
+                    <th>Branch</th>
+                    <th>Account Type</th>
+                    <th>Available Balance</th>
+                    <th>Status</th>
+                    <th>Opening Date</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if accounts %}
+                    {% for a in accounts %}
+                    <tr>
+                        <td class="fw-bold">
+                            <a href="{{ url_for('account.view_account', account_id=a.account_id) }}" class="text-decoration-none text-primary">
+                                #{{ a.account_id }}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('customer.view_customer', customer_id=a.customer_id) }}" class="text-dark fw-semibold text-decoration-none">
+                                {{ a.customer_name }}
+                            </a>
+                        </td>
+                        <td>{{ a.branch_name }}</td>
+                        <td>
+                            <span class="badge {% if a.account_type == 'Savings' %}bg-primary-subtle text-primary{% else %}bg-purple-subtle text-purple{% endif %} border">
+                                {{ a.account_type }}
+                            </span>
+                        </td>
+                        <td class="fw-bold text-success fs-6">{{ a.balance | currency }}</td>
+                        <td>
+                            <span class="status-pill {{ 'active' if a.account_status == 'Active' else 'inactive' }}">
+                                <i class="bi {{ 'bi-check-circle-fill' if a.account_status == 'Active' else 'bi-dash-circle-fill' }}"></i>
+                                {{ a.account_status }}
+                            </span>
+                        </td>
+                        <td class="text-muted small">{{ a.opening_date }}</td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('account.view_account', account_id=a.account_id) }}" class="btn btn-outline-primary" title="View Statement">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{{ url_for('transaction.deposit') }}?account_id={{ a.account_id }}" class="btn btn-outline-success" title="Deposit">
+                                    <i class="bi bi-arrow-down-circle"></i>
+                                </a>
+                                <a href="{{ url_for('transaction.withdraw') }}?account_id={{ a.account_id }}" class="btn btn-outline-danger" title="Withdraw">
+                                    <i class="bi bi-arrow-up-circle"></i>
+                                </a>
+                                <form method="POST" action="{{ url_for('account.toggle_status', account_id=a.account_id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-outline-warning" title="Toggle Status (Active/Inactive)">
+                                        <i class="bi bi-power"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <i class="bi bi-wallet-x fs-1 d-block mb-2 text-secondary"></i>
+                            No accounts found matching your filters.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
