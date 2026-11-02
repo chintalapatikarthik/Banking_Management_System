@@ -82,6 +82,15 @@ def verify_server():
         assert "customer_name" in csv_text or "customer_id" in csv_text
         print("[PASS] GET /reports/export/top_balance -> 200 OK (CSV generated)")
 
+    # 8. Test Reset Sample Data API endpoint & confirm pristine state
+    req = urllib.request.Request(f"{base_url}/sql-operations/api/reset-sample-data", data=b'{}', headers={'Content-Type': 'application/json'})
+    with opener.open(req) as resp:
+        assert resp.status == 200
+        res = json.loads(resp.read().decode('utf-8'))
+        assert res['success'] is True
+        print(f"[PASS] POST /sql-operations/api/reset-sample-data -> 200 OK ({res['message']})")
+
+
     print("\n" + "="*60)
     print("ALL LIVE SERVER INTEGRATION CHECKS PASSED SUCCESSFULLY!")
     print("="*60)

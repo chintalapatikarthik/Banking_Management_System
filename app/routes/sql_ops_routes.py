@@ -75,3 +75,17 @@ def api_run_custom():
         return jsonify({'success': True, 'data': result})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 400
+
+@sql_ops_bp.route('/api/reset-sample-data', methods=['POST'])
+@login_required
+def api_reset_sample_data():
+    try:
+        from database.init_db import init_database
+        init_database(reset=True)
+        return jsonify({
+            'success': True,
+            'message': 'Sample data successfully restored to canonical dataset (10 Customers, 12 Accounts, 24 Transactions, 6 Loans, 6 Employees, 4 Branches).'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+

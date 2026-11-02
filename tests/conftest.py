@@ -30,3 +30,13 @@ def client(app):
 @pytest.fixture(scope='function')
 def runner(app):
     return app.test_cli_runner()
+
+@pytest.fixture(scope='session', autouse=True)
+def clean_database_after_all_tests():
+    yield
+    # Restore canonical sample data so test modifications never persist in banking.db
+    try:
+        init_database(reset=True)
+    except Exception as e:
+        print(f"Error resetting database after test suite: {e}")
+
