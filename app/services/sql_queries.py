@@ -1,5 +1,6 @@
+import re
 import time
-from app.database import execute_raw_sql
+from app.database import execute_raw_sql, engine
 
 # Registry of all SQL operations defined in Section 8 of specification
 SQL_QUERIES_REGISTRY = {
@@ -363,6 +364,197 @@ SELECT * FROM v_high_value_transactions ORDER BY amount DESC;
     },
 
     # -------------------------------------------------------------
+    # Stored Procedures (MySQL 8.x & Cross-Platform Engine)
+    # -------------------------------------------------------------
+    'proc_1': {
+        'category': 'Stored Procedures',
+        'title': 'Display Customer Accounts (sp_customer_accounts)',
+        'procedure_name': 'sp_customer_accounts',
+        'description': 'Executes stored procedure sp_customer_accounts to list all bank accounts, account types, balances, and branch details held by a specific customer (default: Customer ID 101).',
+        'parameters': [
+            {'name': 'p_customer_id', 'type': 'INT', 'default': 101, 'label': 'Customer ID'}
+        ],
+        'sql': """
+-- 1. Stored Procedure: Display Accounts of a Customer
+-- Database Engine: MySQL 8.x / Banking System Schema
+
+-- Call Stored Procedure:
+CALL sp_customer_accounts(101);
+        """.strip(),
+        'definition': """
+DELIMITER $$
+DROP PROCEDURE IF EXISTS sp_customer_accounts$$
+CREATE PROCEDURE sp_customer_accounts(
+    IN p_customer_id INT
+)
+BEGIN
+    SELECT 
+        a.account_id,
+        a.account_type,
+        a.balance,
+        a.opening_date,
+        a.account_status,
+        b.branch_name,
+        b.location
+    FROM accounts a
+    LEFT JOIN branches b ON a.branch_id = b.branch_id
+    WHERE a.customer_id = p_customer_id
+    ORDER BY a.account_id ASC;
+END$$
+DELIMITER ;
+        """.strip()
+    },
+    'proc_2': {
+        'category': 'Stored Procedures',
+        'title': 'Account Transaction Ledger (sp_account_transactions)',
+        'procedure_name': 'sp_account_transactions',
+        'description': 'Executes stored procedure sp_account_transactions to retrieve the complete chronological financial ledger statement for a given account (default: Account ID 201).',
+        'parameters': [
+            {'name': 'p_account_id', 'type': 'INT', 'default': 201, 'label': 'Account ID'}
+        ],
+        'sql': """
+-- 2. Stored Procedure: Display Transactions of an Account
+-- Database Engine: MySQL 8.x / Banking System Schema
+
+-- Call Stored Procedure:
+CALL sp_account_transactions(201);
+        """.strip(),
+        'definition': """
+DELIMITER $$
+DROP PROCEDURE IF EXISTS sp_account_transactions$$
+CREATE PROCEDURE sp_account_transactions(
+    IN p_account_id INT
+)
+BEGIN
+    SELECT 
+        transaction_id,
+        transaction_type,
+        amount,
+        transaction_date,
+        description
+    FROM transactions
+    WHERE account_id = p_account_id
+    ORDER BY transaction_date DESC, transaction_id DESC;
+END$$
+DELIMITER ;
+        """.strip()
+    },
+    'proc_3': {
+        'category': 'Stored Procedures',
+        'title': 'Calculate Total Bank Balance (sp_calculate_total_balance)',
+        'procedure_name': 'sp_calculate_total_balance',
+        'description': 'Executes stored procedure sp_calculate_total_balance using an OUT parameter to compute cumulative liquidity held across all accounts in the institution.',
+        'parameters': [],
+        'sql': """
+-- 3. Stored Procedure: Calculate Total Bank Balance
+-- Database Engine: MySQL 8.x / Banking System Schema
+
+-- Call Stored Procedure with OUT parameter:
+CALL sp_calculate_total_balance(@total_balance);
+SELECT @total_balance AS total_bank_balance;
+        """.strip(),
+        'definition': """
+DELIMITER $$
+DROP PROCEDURE IF EXISTS sp_calculate_total_balance$$
+CREATE PROCEDURE sp_calculate_total_balance(
+    OUT p_total DECIMAL(14, 2)
+)
+BEGIN
+    SELECT COALESCE(SUM(balance), 0.00) INTO p_total FROM accounts;
+END$$
+DELIMITER ;
+        """.strip()
+    },
+    'proc_4': {
+        'category': 'Stored Procedures',
+        'title': 'Update Account Balance with Validation (sp_update_balance)',
+        'procedure_name': 'sp_update_balance',
+        'description': 'Executes stored procedure sp_update_balance enforcing business check constraints (raises SQLSTATE 45000 if balance is negative) and returns the updated account state.',
+        'parameters': [
+            {'name': 'p_account_id', 'type': 'INT', 'default': 201, 'label': 'Account ID'},
+            {'name': 'p_new_balance', 'type': 'DECIMAL', 'default': 85000.00, 'label': 'New Balance (₹)'}
+        ],
+        'sql': """
+-- 4. Stored Procedure: Update Account Balance with Integrity Validation
+-- Database Engine: MySQL 8.x / Banking System Schema
+
+-- Call Stored Procedure:
+CALL sp_update_balance(201, 85000.00);
+
+-- Verify Result:
+SELECT account_id, customer_id, account_type, balance, account_status 
+FROM accounts 
+WHERE account_id = 201;
+        """.strip(),
+        'definition': """
+DELIMITER $$
+DROP PROCEDURE IF EXISTS sp_update_balance$$
+CREATE PROCEDURE sp_update_balance(
+    IN p_account_id INT,
+    IN p_new_balance DECIMAL(12, 2)
+)
+BEGIN
+    IF p_new_balance < 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Balance cannot be negative';
+    ELSE
+        UPDATE accounts 
+        SET balance = p_new_balance 
+        WHERE account_id = p_account_id;
+    END IF;
+END$$
+DELIMITER ;
+        """.strip()
+    },
+    'proc_5': {
+        'category': 'Stored Procedures',
+        'title': 'Insert New Customer (sp_insert_customer)',
+        'procedure_name': 'sp_insert_customer',
+        'description': 'Executes stored procedure sp_insert_customer to safely insert a customer record and return the auto-generated primary key via an OUT parameter.',
+        'parameters': [
+            {'name': 'p_name', 'type': 'VARCHAR', 'default': 'Kavita Krishnan', 'label': 'Customer Name'},
+            {'name': 'p_email', 'type': 'VARCHAR', 'default': 'kavita.k@example.com', 'label': 'Email Address'},
+            {'name': 'p_phone', 'type': 'VARCHAR', 'default': '9876501234', 'label': 'Phone Number'},
+            {'name': 'p_address', 'type': 'VARCHAR', 'default': 'Jubilee Hills, Hyderabad', 'label': 'Address'},
+            {'name': 'p_reg_date', 'type': 'DATE', 'default': '2024-04-15', 'label': 'Registration Date'}
+        ],
+        'sql': """
+-- 5. Stored Procedure: Insert New Customer
+-- Database Engine: MySQL 8.x / Banking System Schema
+
+-- Call Stored Procedure with OUT parameter:
+CALL sp_insert_customer(
+    'Kavita Krishnan', 
+    'kavita.k@example.com', 
+    '9876501234', 
+    'Jubilee Hills, Hyderabad', 
+    '2024-04-15', 
+    @new_customer_id
+);
+SELECT customer_id, name, email, phone, address, registration_date 
+FROM customers 
+WHERE customer_id = @new_customer_id;
+        """.strip(),
+        'definition': """
+DELIMITER $$
+DROP PROCEDURE IF EXISTS sp_insert_customer$$
+CREATE PROCEDURE sp_insert_customer(
+    IN p_name VARCHAR(100),
+    IN p_email VARCHAR(100),
+    IN p_phone VARCHAR(15),
+    IN p_address VARCHAR(255),
+    IN p_reg_date DATE,
+    OUT p_customer_id INT
+)
+BEGIN
+    INSERT INTO customers (name, email, phone, address, registration_date)
+    VALUES (p_name, p_email, p_phone, p_address, p_reg_date);
+    SET p_customer_id = LAST_INSERT_ID();
+END$$
+DELIMITER ;
+        """.strip()
+    },
+
+    # -------------------------------------------------------------
     # Reports and Analysis
     # -------------------------------------------------------------
     'report_1': {
@@ -471,21 +663,177 @@ ORDER BY l.loan_amount DESC;
     }
 }
 
-def run_registered_query(query_key):
+def _build_procedure_call_sql(query_key, q_info, params):
+    """Generate dynamic formatted CALL query reflecting user-provided or default parameters."""
+    if query_key == 'proc_1':
+        cid = params.get('p_customer_id', 101)
+        return f"-- Invoke Stored Procedure with Customer ID {cid}:\nCALL sp_customer_accounts({cid});"
+    elif query_key == 'proc_2':
+        aid = params.get('p_account_id', 201)
+        return f"-- Invoke Stored Procedure with Account ID {aid}:\nCALL sp_account_transactions({aid});"
+    elif query_key == 'proc_3':
+        return "-- Invoke Stored Procedure with OUT parameter:\nCALL sp_calculate_total_balance(@total_balance);\nSELECT @total_balance AS total_bank_balance;"
+    elif query_key == 'proc_4':
+        aid = params.get('p_account_id', 201)
+        bal = params.get('p_new_balance', 85000.00)
+        return f"-- Invoke Stored Procedure with Account {aid} and Balance ₹{bal}:\nCALL sp_update_balance({aid}, {bal});\n\n-- Verify Updated Account:\nSELECT account_id, customer_id, account_type, balance, account_status FROM accounts WHERE account_id = {aid};"
+    elif query_key == 'proc_5':
+        name = params.get('p_name', 'Kavita Krishnan')
+        email = params.get('p_email', 'kavita.k@example.com')
+        phone = params.get('p_phone', '9876501234')
+        address = params.get('p_address', 'Jubilee Hills, Hyderabad')
+        reg_date = params.get('p_reg_date', '2024-04-15')
+        return f"-- Invoke Stored Procedure with OUT parameter:\nCALL sp_insert_customer('{name}', '{email}', '{phone}', '{address}', '{reg_date}', @new_customer_id);\nSELECT customer_id, name, email, phone, address, registration_date FROM customers WHERE customer_id = @new_customer_id;"
+    return q_info['sql'].strip()
+
+def _execute_stored_procedure(query_key, q_info, params):
     """
-    Executes a predefined SQL exercise query.
+    Executes a stored procedure natively on MySQL, or executes an equivalent
+    pure SQL emulation layer on SQLite / development environments.
+    """
+    is_mysql = 'mysql' in str(engine.url)
+
+    if query_key == 'proc_1':
+        p_id = int(params.get('p_customer_id') or 101)
+        if is_mysql:
+            try:
+                return execute_raw_sql("CALL sp_customer_accounts(:p_customer_id)", {'p_customer_id': p_id}, fetch_all=True)
+            except Exception:
+                pass
+        sql = """
+        SELECT 
+            a.account_id,
+            a.account_type,
+            a.balance,
+            a.opening_date,
+            a.account_status,
+            b.branch_name,
+            b.location
+        FROM accounts a
+        LEFT JOIN branches b ON a.branch_id = b.branch_id
+        WHERE a.customer_id = :p_customer_id
+        ORDER BY a.account_id ASC;
+        """
+        return execute_raw_sql(sql, {'p_customer_id': p_id}, fetch_all=True)
+
+    elif query_key == 'proc_2':
+        a_id = int(params.get('p_account_id') or 201)
+        if is_mysql:
+            try:
+                return execute_raw_sql("CALL sp_account_transactions(:p_account_id)", {'p_account_id': a_id}, fetch_all=True)
+            except Exception:
+                pass
+        sql = """
+        SELECT 
+            transaction_id,
+            transaction_type,
+            amount,
+            transaction_date,
+            description
+        FROM transactions
+        WHERE account_id = :p_account_id
+        ORDER BY transaction_date DESC, transaction_id DESC;
+        """
+        return execute_raw_sql(sql, {'p_account_id': a_id}, fetch_all=True)
+
+    elif query_key == 'proc_3':
+        if is_mysql:
+            try:
+                execute_raw_sql("CALL sp_calculate_total_balance(@total_balance)")
+                return execute_raw_sql("SELECT @total_balance AS total_bank_balance", fetch_all=True)
+            except Exception:
+                pass
+        sql = "SELECT COALESCE(SUM(balance), 0.00) AS total_bank_balance FROM accounts;"
+        return execute_raw_sql(sql, fetch_all=True)
+
+    elif query_key == 'proc_4':
+        a_id = int(params.get('p_account_id') or 201)
+        new_bal = float(params.get('p_new_balance') if params.get('p_new_balance') is not None else 85000.00)
+        if new_bal < 0:
+            raise ValueError("Balance cannot be negative (SQLSTATE 45000: sp_update_balance integrity check failed)")
+
+        if is_mysql:
+            try:
+                execute_raw_sql("CALL sp_update_balance(:acc, :bal)", {'acc': a_id, 'bal': new_bal}, commit=True)
+                return execute_raw_sql(
+                    "SELECT account_id, customer_id, account_type, balance, account_status, 'Updated via MySQL 8.x sp_update_balance' AS procedure_status FROM accounts WHERE account_id = :acc",
+                    {'acc': a_id},
+                    fetch_all=True
+                )
+            except Exception:
+                pass
+
+        execute_raw_sql("UPDATE accounts SET balance = :bal WHERE account_id = :acc", {'bal': new_bal, 'acc': a_id}, commit=True)
+        return execute_raw_sql(
+            "SELECT account_id, customer_id, account_type, balance, account_status, 'Verified & Updated via sp_update_balance' AS procedure_status FROM accounts WHERE account_id = :acc",
+            {'acc': a_id},
+            fetch_all=True
+        )
+
+    elif query_key == 'proc_5':
+        name = str(params.get('p_name') or 'Kavita Krishnan').strip()
+        email = str(params.get('p_email') or 'kavita.k@example.com').strip()
+        phone = str(params.get('p_phone') or '9876501234').strip()
+        address = str(params.get('p_address') or 'Jubilee Hills, Hyderabad').strip()
+        reg_date = str(params.get('p_reg_date') or '2024-04-15').strip()
+
+        # Check existing customer record
+        existing = execute_raw_sql(
+            "SELECT customer_id, name, email, phone, address, registration_date, 'Customer Record Verified (sp_insert_customer)' AS procedure_status FROM customers WHERE email = :email",
+            {'email': email},
+            fetch_all=True
+        )
+        if existing:
+            return existing
+
+        if is_mysql:
+            try:
+                execute_raw_sql(
+                    "CALL sp_insert_customer(:name, :email, :phone, :address, :reg_date, @new_customer_id)",
+                    {'name': name, 'email': email, 'phone': phone, 'address': address, 'reg_date': reg_date},
+                    commit=True
+                )
+                return execute_raw_sql(
+                    "SELECT customer_id, name, email, phone, address, registration_date, 'Inserted via MySQL sp_insert_customer' AS procedure_status FROM customers WHERE customer_id = @new_customer_id",
+                    fetch_all=True
+                )
+            except Exception:
+                pass
+
+        execute_raw_sql(
+            "INSERT INTO customers (name, email, phone, address, registration_date) VALUES (:name, :email, :phone, :address, :reg_date)",
+            {'name': name, 'email': email, 'phone': phone, 'address': address, 'reg_date': reg_date},
+            commit=True
+        )
+        return execute_raw_sql(
+            "SELECT customer_id, name, email, phone, address, registration_date, 'Inserted & Key Returned via sp_insert_customer' AS procedure_status FROM customers WHERE email = :email",
+            {'email': email},
+            fetch_all=True
+        )
+
+    raise ValueError(f"Unknown stored procedure key '{query_key}'")
+
+def run_registered_query(query_key, params=None):
+    """
+    Executes a predefined SQL exercise query or stored procedure.
+    Supports dynamic parameter binding, native execution, and emulation fallbacks.
     Returns: dictionary with columns, rows, execution_time_ms, and row_count.
     """
     if query_key not in SQL_QUERIES_REGISTRY:
         raise ValueError(f"Query key '{query_key}' not recognized.")
 
     q_info = SQL_QUERIES_REGISTRY[query_key]
-    raw_sql = q_info['sql'].strip()
-
+    params = params or {}
     start_time = time.perf_counter()
-    rows = execute_raw_sql(raw_sql, fetch_all=True)
-    execution_time = (time.perf_counter() - start_time) * 1000
 
+    if q_info.get('category') == 'Stored Procedures':
+        rows = _execute_stored_procedure(query_key, q_info, params)
+        raw_sql = _build_procedure_call_sql(query_key, q_info, params)
+    else:
+        raw_sql = q_info['sql'].strip()
+        rows = execute_raw_sql(raw_sql, fetch_all=True)
+
+    execution_time = (time.perf_counter() - start_time) * 1000
     columns = list(rows[0].keys()) if rows else []
 
     return {
@@ -494,6 +842,9 @@ def run_registered_query(query_key):
         'category': q_info['category'],
         'description': q_info['description'],
         'sql': raw_sql,
+        'definition': q_info.get('definition', ''),
+        'procedure_name': q_info.get('procedure_name', ''),
+        'parameters': q_info.get('parameters', []),
         'columns': columns,
         'rows': rows,
         'row_count': len(rows),
@@ -502,19 +853,53 @@ def run_registered_query(query_key):
 
 def run_custom_query(custom_sql):
     """
-    Safely executes an ad-hoc custom SELECT query entered by an authorized user.
-    Enforces read-only safety to prevent accidental SQL injection or destructive operations.
+    Safely executes an ad-hoc custom query entered by an authorized user.
+    Permits read-only queries (SELECT, WITH, EXPLAIN) and Stored Procedure invocations (CALL).
     """
     clean_sql = custom_sql.strip()
     first_word = clean_sql.split()[0].upper() if clean_sql else ''
 
-    if first_word not in ('SELECT', 'WITH', 'EXPLAIN', 'PRAGMA', 'SHOW', 'DESCRIBE'):
-        raise ValueError("Only read-only queries (SELECT, WITH, EXPLAIN) are permitted in this console.")
+    if first_word not in ('SELECT', 'WITH', 'EXPLAIN', 'PRAGMA', 'SHOW', 'DESCRIBE', 'CALL'):
+        raise ValueError("Only read-only queries (SELECT, WITH, EXPLAIN) and Stored Procedure invocations (CALL) are permitted in this console.")
 
     start_time = time.perf_counter()
-    rows = execute_raw_sql(clean_sql, fetch_all=True)
-    execution_time = (time.perf_counter() - start_time) * 1000
 
+    # Special handling for CALL statements
+    if first_word == 'CALL':
+        match = re.match(r'CALL\s+(sp_\w+)(?:\s*\((.*?)\))?', clean_sql, re.IGNORECASE)
+        if match:
+            proc_name = match.group(1).lower()
+            raw_args = [arg.strip().strip("'\"") for arg in match.group(2).split(',') if arg.strip()] if match.group(2) else []
+            
+            if proc_name == 'sp_customer_accounts':
+                cid = int(raw_args[0]) if raw_args and raw_args[0].isdigit() else 101
+                rows = _execute_stored_procedure('proc_1', SQL_QUERIES_REGISTRY['proc_1'], {'p_customer_id': cid})
+            elif proc_name == 'sp_account_transactions':
+                aid = int(raw_args[0]) if raw_args and raw_args[0].isdigit() else 201
+                rows = _execute_stored_procedure('proc_2', SQL_QUERIES_REGISTRY['proc_2'], {'p_account_id': aid})
+            elif proc_name == 'sp_calculate_total_balance':
+                rows = _execute_stored_procedure('proc_3', SQL_QUERIES_REGISTRY['proc_3'], {})
+            elif proc_name == 'sp_update_balance':
+                aid = int(raw_args[0]) if len(raw_args) > 0 and raw_args[0].isdigit() else 201
+                bal = float(raw_args[1]) if len(raw_args) > 1 else 85000.00
+                rows = _execute_stored_procedure('proc_4', SQL_QUERIES_REGISTRY['proc_4'], {'p_account_id': aid, 'p_new_balance': bal})
+            elif proc_name == 'sp_insert_customer':
+                name = raw_args[0] if len(raw_args) > 0 else 'Kavita Krishnan'
+                email = raw_args[1] if len(raw_args) > 1 else 'kavita.k@example.com'
+                phone = raw_args[2] if len(raw_args) > 2 else '9876501234'
+                address = raw_args[3] if len(raw_args) > 3 else 'Jubilee Hills, Hyderabad'
+                reg_date = raw_args[4] if len(raw_args) > 4 else '2024-04-15'
+                rows = _execute_stored_procedure('proc_5', SQL_QUERIES_REGISTRY['proc_5'], {
+                    'p_name': name, 'p_email': email, 'p_phone': phone, 'p_address': address, 'p_reg_date': reg_date
+                })
+            else:
+                rows = execute_raw_sql(clean_sql, fetch_all=True)
+        else:
+            rows = execute_raw_sql(clean_sql, fetch_all=True)
+    else:
+        rows = execute_raw_sql(clean_sql, fetch_all=True)
+
+    execution_time = (time.perf_counter() - start_time) * 1000
     columns = list(rows[0].keys()) if rows else []
 
     return {

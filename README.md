@@ -4,7 +4,7 @@
 [![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12-blue?logo=python&logoColor=white)](https://python.org)
 [![Flask](https://img.shields.io/badge/Framework-Flask%203.1-black?logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
 [![Database](https://img.shields.io/badge/SQL%20Database-MySQL%208.x%20%2F%20SQLite-00758F?logo=mysql&logoColor=white)](https://mysql.com)
-[![Testing](https://img.shields.io/badge/Tests-16%20Passed%20(100%25)-success?logo=pytest&logoColor=white)](https://pytest.org)
+[![Testing](https://img.shields.io/badge/Tests-19%20Passed%20(100%25)-success?logo=pytest&logoColor=white)](https://pytest.org)
 [![UI](https://img.shields.io/badge/Frontend-Bootstrap%205%20%2B%20Chart.js-7952B3?logo=bootstrap&logoColor=white)](https://getbootstrap.com)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
@@ -19,7 +19,7 @@ Built for administrators, branch managers, and banking officers to oversee custo
 2. [Technology Stack](#-technology-stack)
 3. [System Architecture & Directory Structure](#-system-architecture--directory-structure)
 4. [Database Design & Schema](#-database-design--schema)
-5. [SQL Operations & Analytics Registry (25+ Exercises)](#-sql-operations--analytics-registry)
+5. [SQL Operations & Analytics Registry (30+ Exercises across 7 Categories)](#-sql-operations--analytics-registry)
 6. [Security & Role-Based Access Control](#-security--role-based-access-control)
 7. [Getting Started (Local Installation)](#-getting-started-local-installation)
 8. [Automated Testing Suite](#-automated-testing-suite)
@@ -46,10 +46,11 @@ Built for administrators, branch managers, and banking officers to oversee custo
   - Disburse new loans, track interest rates, aggregate total portfolio liabilities, and rank largest borrowers.
 - **Human Resources & Branches**:
   - Staff onboarding, salary management, branch assignment, and branch liquidity tracking.
-- **Interactive SQL Operations Explorer**:
-  - Live query runner for all 25+ SQL operations, joins, subqueries, views, and aggregate queries from the banking curriculum.
-  - Execution speed benchmarks in milliseconds, rows count indicator, raw SQL syntax preview, and dynamic data tables.
-  - **Custom Safe SQL Console**: Allows authorized users to write and execute custom `SELECT` queries with read-only security enforcement.
+- **Interactive SQL Operations Explorer & Stored Procedures Workbench**:
+  - Live query runner for all 30+ SQL operations, joins, subqueries, views, stored procedures, and aggregate queries from the banking curriculum.
+  - Dedicated **Stored Procedures Workbench** (`/sql-operations/procedures`) to execute, test with dynamic parameters, and inspect DDL definitions for all 5 enterprise MySQL 8.x stored procedures (`sp_customer_accounts`, `sp_account_transactions`, `sp_calculate_total_balance`, `sp_update_balance`, `sp_insert_customer`).
+  - Execution speed benchmarks in milliseconds, rows count indicator, raw SQL syntax preview, DDL/CALL toggle, and dynamic data tables.
+  - **Custom Safe SQL Console**: Allows authorized users to write and execute custom `SELECT` queries and `CALL sp_...` stored procedure invocations with read-only security enforcement.
 - **Executive Reporting & Export**:
   - 6 tabbed analytical reports with 1-click downloadable CSV exports.
 
@@ -111,7 +112,9 @@ SqlProject/
 │       ├── loans/                # Portfolio list & form
 │       ├── employees/            # Staff directory & form
 │       ├── branches/             # Branch network & form
-│       ├── sql_operations/       # Interactive SQL learning platform
+│       ├── sql_operations/       # Interactive SQL learning platform & procedures workbench
+│       │   ├── index.html        # Categorized SQL exercise catalog
+│       │   └── procedures.html   # Dedicated Stored Procedures Workbench
 │       └── reports/              # 6 analytical reports with CSV export
 ├── database/
 │   ├── schema.sql                # MySQL 8.x DDL schema script
@@ -205,7 +208,14 @@ The dedicated **SQL Operations & Analytics** module in the web application execu
 - `view_4`: Query `v_customer_total_balance`.
 - `view_5`: Query `v_high_value_transactions`.
 
-### 6. Reports & Analytics
+### 6. Stored Procedures
+- `proc_1`: Customer Accounts (`sp_customer_accounts`) - retrieves all accounts, balances, and branch details held by a specific customer.
+- `proc_2`: Account Transactions (`sp_account_transactions`) - chronological transaction ledger statement for an account.
+- `proc_3`: Calculate Total Bank Balance (`sp_calculate_total_balance`) - aggregate liquidity across all accounts via OUT parameter.
+- `proc_4`: Update Account Balance (`sp_update_balance`) - updates balance with negative balance exception handling (`SIGNAL SQLSTATE '45000'`).
+- `proc_5`: Insert New Customer (`sp_insert_customer`) - atomic customer registration returning the generated customer ID.
+
+### 7. Reports & Analytics
 - `report_1`: Top 5 customers ranked by aggregate balance.
 - `report_2`: Most active customers by transaction count and volume.
 - `report_3`: Monthly transaction volume breakdown by month and type.

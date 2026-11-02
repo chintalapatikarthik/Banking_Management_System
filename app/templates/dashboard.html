@@ -105,6 +105,29 @@
     </div>
 </div>
 
+<!-- Database Stored Procedures & SQL Analytics Callout -->
+<div class="card border-0 shadow-sm rounded-4 mb-4 bg-white overflow-hidden border-start border-4 border-primary">
+    <div class="card-body p-3 px-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <div class="avatar-circle bg-purple text-white d-flex align-items-center justify-content-center rounded-3 shadow-sm" style="width: 44px; height: 44px; font-size: 1.3rem;">
+                <i class="bi bi-gear-wide-connected"></i>
+            </div>
+            <div>
+                <h6 class="mb-0 fw-bold text-dark">Database Stored Procedures & Advanced SQL Queries</h6>
+                <small class="text-muted">Interactive execution for all 5 MySQL stored procedures (customer accounts, transaction ledger, balance updates, and total liquidity) plus 25+ SQL catalog queries.</small>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ url_for('sql_ops.procedures') }}" class="btn btn-sm btn-primary-custom shadow-sm">
+                <i class="bi bi-play-circle me-1"></i> Stored Procedures Workbench
+            </a>
+            <a href="{{ url_for('sql_ops.index') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-terminal me-1"></i> SQL Exercises Catalog
+            </a>
+        </div>
+    </div>
+</div>
+
 <!-- Charts Section: Row 1 -->
 <div class="row g-4 mb-4">
     <!-- Chart 1: Monthly Transaction Activity -->

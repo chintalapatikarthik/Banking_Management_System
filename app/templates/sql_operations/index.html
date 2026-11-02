@@ -4,6 +4,26 @@
 {% block page_title %}SQL Operations & Database Analytics{% endblock %}
 
 {% block content %}
+<!-- Quick Notice Banner for Stored Procedures Workbench -->
+<div class="card border-0 shadow-sm rounded-4 mb-4 bg-primary-subtle border-primary-subtle overflow-hidden">
+    <div class="card-body p-3 px-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <div class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center rounded-3 shadow-sm" style="width: 42px; height: 42px; font-size: 1.25rem;">
+                <i class="bi bi-gear-wide-connected"></i>
+            </div>
+            <div>
+                <h6 class="mb-0 fw-bold text-dark">Database Stored Procedures Integration Active</h6>
+                <small class="text-muted">Explore all 5 production MySQL stored procedures with interactive parameter forms, error handling, and DDL inspection.</small>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ url_for('sql_ops.procedures') }}" class="btn btn-sm btn-primary-custom shadow-sm">
+                <i class="bi bi-motherboard me-1"></i> Dedicated Stored Procedures Workbench
+            </a>
+        </div>
+    </div>
+</div>
+
 <div class="row g-4">
     <!-- Left Column: Query Exercises Library (Categorized) -->
     <div class="col-lg-4">
@@ -13,26 +33,31 @@
                     <h6 class="mb-0 fw-bold"><i class="bi bi-journal-code text-primary me-2"></i>SQL Exercise Catalog</h6>
                     <small class="text-muted">{{ total_queries }} Interactive Real-Time Exercises</small>
                 </div>
+                <span class="badge bg-secondary-subtle text-secondary border">7 Categories</span>
             </div>
 
             <div class="card-body p-2" style="max-height: 800px; overflow-y: auto;">
                 <div class="accordion accordion-flush" id="sqlAccordion">
                     {% for cat_name, queries in categories.items() %}
+                    {% set has_active = queries | selectattr('key', 'equalto', initial_key) | list | length > 0 %}
                     <div class="accordion-item border-0 mb-2 rounded-3 overflow-hidden shadow-sm">
                         <h2 class="accordion-header" id="heading{{ loop.index }}">
-                            <button class="accordion-button py-2 px-3 fw-semibold small bg-light {% if not loop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}">
-                                <i class="bi {% if 'Basic' in cat_name %}bi-check2-square text-primary{% elif 'Join' in cat_name %}bi-intersect text-success{% elif 'Aggregate' in cat_name %}bi-calculator text-warning{% elif 'Subquery' in cat_name %}bi-layers text-danger{% elif 'View' in cat_name %}bi-table text-info{% else %}bi-graph-up-arrow text-purple{% endif %} me-2"></i>
+                            <button class="accordion-button py-2 px-3 fw-semibold small bg-light {% if not has_active and not (loop.first and not initial_key) %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}">
+                                <i class="bi {% if 'Basic' in cat_name %}bi-check2-square text-primary{% elif 'Join' in cat_name %}bi-intersect text-success{% elif 'Aggregate' in cat_name %}bi-calculator text-warning{% elif 'Subquery' in cat_name %}bi-layers text-danger{% elif 'View' in cat_name %}bi-table text-info{% elif 'Procedure' in cat_name %}bi-gear-wide-connected text-purple{% else %}bi-graph-up-arrow text-primary{% endif %} me-2"></i>
                                 {{ cat_name }} ({{ queries|length }})
                             </button>
                         </h2>
-                        <div id="collapse{{ loop.index }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" data-bs-parent="#sqlAccordion">
+                        <div id="collapse{{ loop.index }}" class="accordion-collapse collapse {% if has_active or (loop.first and not initial_key) %}show{% endif %}" data-bs-parent="#sqlAccordion">
                             <div class="accordion-body p-1 bg-white">
                                 {% for q in queries %}
                                 <button type="button" 
-                                        class="query-item-btn {% if q.key == 'basic_1' %}active{% endif %}" 
+                                        class="query-item-btn {% if q.key == initial_key %}active{% endif %}" 
                                         data-key="{{ q.key }}"
                                         onclick="selectQuery('{{ q.key }}', this)">
                                     <span class="text-truncate">{{ q.title }}</span>
+                                    {% if 'Procedure' in cat_name %}
+                                    <span class="badge bg-purple-subtle text-purple ms-auto me-1 small" style="font-size: 0.65rem;">SP</span>
+                                    {% endif %}
                                     <i class="bi bi-chevron-right text-muted small ms-2"></i>
                                 </button>
                                 {% endfor %}
@@ -51,8 +76,8 @@
         <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
             <div class="card-header bg-white border-bottom py-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
                 <div>
-                    <span class="badge bg-primary-subtle text-primary border mb-1" id="queryCategoryBadge">Basic Queries</span>
-                    <h5 class="mb-0 fw-bold brand-font" id="queryTitleDisplay">Accounts with Balance Greater than 50,000</h5>
+                    <span class="badge bg-primary-subtle text-primary border mb-1" id="queryCategoryBadge">{{ initial_result.category if initial_result else 'Basic Queries' }}</span>
+                    <h5 class="mb-0 fw-bold brand-font" id="queryTitleDisplay">{{ initial_result.title if initial_result else 'Accounts with Balance Greater than 50,000' }}</h5>
                 </div>
                 <div class="d-flex align-items-center gap-2">
                     <button type="button" class="btn btn-sm btn-outline-secondary" id="copySqlBtn" onclick="copySql()">
@@ -66,21 +91,40 @@
 
             <div class="card-body p-4">
                 <p class="text-muted small mb-3" id="queryDescriptionDisplay">
-                    Filters all bank accounts where the available balance exceeds ₹50,000 using WHERE clause.
+                    {{ initial_result.description if initial_result else 'Filters all bank accounts where the available balance exceeds ₹50,000 using WHERE clause.' }}
                 </p>
+
+                <!-- Interactive Parameters Box (Displayed for Stored Procedures) -->
+                <div id="paramsContainer" class="p-3 mb-3 bg-light rounded-3 border {% if not (initial_result and initial_result.parameters) %}d-none{% endif %}">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="fw-bold small text-dark"><i class="bi bi-sliders me-1 text-primary"></i>Stored Procedure Input Parameters</span>
+                        <small class="text-muted">Modify values and re-run to test procedure response</small>
+                    </div>
+                    <div class="row g-2" id="paramsFormRow">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+
+                <!-- Code View Switcher (For Stored Procedures with DDL Definition) -->
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <div class="btn-group btn-group-sm" id="codeViewSwitcher" role="group">
+                        <button type="button" class="btn btn-outline-primary active" id="btnViewCall" onclick="switchCodeView('call')">
+                            <i class="bi bi-play-circle me-1"></i> Invocation Query (CALL)
+                        </button>
+                        <button type="button" class="btn btn-outline-primary {% if not (initial_result and initial_result.definition) %}d-none{% endif %}" id="btnViewDdl" onclick="switchCodeView('ddl')">
+                            <i class="bi bi-code-square me-1"></i> Procedure Definition (CREATE PROCEDURE)
+                        </button>
+                    </div>
+                    <span class="text-muted small" id="procedureTag">
+                        {% if initial_result and initial_result.procedure_name %}
+                        <code class="text-purple">{{ initial_result.procedure_name }}</code>
+                        {% endif %}
+                    </span>
+                </div>
 
                 <!-- Code box -->
                 <div class="mb-3 position-relative">
-                    <pre class="sql-code-box mb-0" id="sqlCodeDisplay">SELECT 
-    account_id,
-    customer_id,
-    account_type,
-    balance,
-    opening_date,
-    account_status
-FROM accounts
-WHERE balance > 50000.00
-ORDER BY balance DESC;</pre>
+                    <pre class="sql-code-box mb-0" id="sqlCodeDisplay">{{ initial_result.sql if initial_result else '' }}</pre>
                 </div>
 
                 <!-- Execution Metrics Pill -->
@@ -130,19 +174,21 @@ ORDER BY balance DESC;</pre>
         <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
             <div class="card-header bg-white border-bottom py-3 d-flex align-items-center justify-content-between">
                 <div>
-                    <h6 class="mb-0 fw-bold"><i class="bi bi-terminal-fill text-dark me-2"></i>Custom SQL Query Console</h6>
-                    <small class="text-muted">Execute ad-hoc SELECT queries directly against the database</small>
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-terminal-fill text-dark me-2"></i>Custom SQL & Procedure Console</h6>
+                    <small class="text-muted">Execute ad-hoc SELECT queries and Stored Procedure CALL statements</small>
                 </div>
-                <span class="badge bg-secondary-subtle text-secondary border">Read-Only Safety Active</span>
+                <span class="badge bg-secondary-subtle text-secondary border">Read-Only & SP Safe</span>
             </div>
             <div class="card-body p-4">
                 <div class="mb-3">
-                    <textarea class="form-control font-monospace" id="customSqlInput" rows="3" placeholder="SELECT c.name, a.balance FROM customers c JOIN accounts a ON c.customer_id = a.customer_id WHERE a.balance > 100000;"></textarea>
+                    <textarea class="form-control font-monospace" id="customSqlInput" rows="3" placeholder="SELECT c.name, a.balance FROM customers c JOIN accounts a ON c.customer_id = a.customer_id WHERE a.balance > 100000;
+-- Or execute stored procedures:
+-- CALL sp_customer_accounts(101);"></textarea>
                 </div>
-                <div class="d-flex justify-content-between align-items-center">
-                    <small class="text-muted">Supported statements: SELECT, WITH, EXPLAIN against active database tables.</small>
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <small class="text-muted">Supported statements: SELECT, WITH, EXPLAIN, and CALL against database schema.</small>
                     <button type="button" class="btn btn-dark btn-sm" onclick="runCustomSql()">
-                        <i class="bi bi-lightning-charge me-1"></i> Run Custom SQL
+                        <i class="bi bi-lightning-charge me-1"></i> Run Custom SQL / CALL
                     </button>
                 </div>
             </div>
@@ -153,14 +199,35 @@ ORDER BY balance DESC;</pre>
 
 {% block extra_scripts %}
 <script>
-let currentQueryKey = 'basic_1';
+let currentQueryKey = '{{ initial_key }}';
+let activeCodeView = 'call'; // 'call' or 'ddl'
+let cachedData = {{ initial_result | tojson if initial_result else '{}' }};
+
+// Initialize parameters on page load if applicable
+document.addEventListener('DOMContentLoaded', function() {
+    if (cachedData && cachedData.parameters) {
+        renderParamInputs(cachedData.parameters);
+    }
+});
 
 // Switch active exercise
 function selectQuery(key, btnElement) {
     currentQueryKey = key;
+    activeCodeView = 'call';
     document.querySelectorAll('.query-item-btn').forEach(btn => btn.classList.remove('active'));
     btnElement.classList.add('active');
     executeCurrentQuery();
+}
+
+// Gather parameter values from input fields
+function getParamValues() {
+    const params = {};
+    const inputs = document.querySelectorAll('.param-input');
+    inputs.forEach(input => {
+        const name = input.getAttribute('data-param-name');
+        params[name] = input.value;
+    });
+    return params;
 }
 
 // Execute query via API
@@ -169,24 +236,31 @@ function executeCurrentQuery() {
     runBtn.disabled = true;
     runBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Executing...';
 
-    fetch(`/sql-operations/api/run/${currentQueryKey}`)
-        .then(res => res.json())
-        .then(res => {
-            runBtn.disabled = false;
-            runBtn.innerHTML = '<i class="bi bi-play-fill"></i> Execute SQL Query';
+    const params = getParamValues();
 
-            if (!res.success) {
-                alert('Query Execution Error: ' + res.error);
-                return;
-            }
+    fetch(`/sql-operations/api/run/${currentQueryKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params)
+    })
+    .then(res => res.json())
+    .then(res => {
+        runBtn.disabled = false;
+        runBtn.innerHTML = '<i class="bi bi-play-fill"></i> Execute SQL Query';
 
-            renderQueryResult(res.data);
-        })
-        .catch(err => {
-            runBtn.disabled = false;
-            runBtn.innerHTML = '<i class="bi bi-play-fill"></i> Execute SQL Query';
-            alert('Request Failed: ' + err.message);
-        });
+        if (!res.success) {
+            alert('Query Execution Error: ' + res.error);
+            return;
+        }
+
+        cachedData = res.data;
+        renderQueryResult(res.data);
+    })
+    .catch(err => {
+        runBtn.disabled = false;
+        runBtn.innerHTML = '<i class="bi bi-play-fill"></i> Execute SQL Query';
+        alert('Request Failed: ' + err.message);
+    });
 }
 
 // Render result payload into DOM
@@ -194,11 +268,82 @@ function renderQueryResult(data) {
     document.getElementById('queryTitleDisplay').textContent = data.title;
     document.getElementById('queryCategoryBadge').textContent = data.category;
     document.getElementById('queryDescriptionDisplay').textContent = data.description;
-    document.getElementById('sqlCodeDisplay').textContent = data.sql;
+    
+    // Switch between CALL query and DDL definition
+    updateCodeDisplay(data);
+
+    // Procedure DDL toggle button visibility
+    const ddlBtn = document.getElementById('btnViewDdl');
+    const procTag = document.getElementById('procedureTag');
+    if (data.definition) {
+        ddlBtn.classList.remove('d-none');
+        procTag.innerHTML = `<code class="text-purple">${data.procedure_name || 'Stored Procedure'}</code>`;
+    } else {
+        ddlBtn.classList.add('d-none');
+        procTag.innerHTML = '';
+        activeCodeView = 'call';
+        document.getElementById('btnViewCall').classList.add('active');
+        document.getElementById('btnViewDdl').classList.remove('active');
+    }
+
+    // Parameters input container
+    renderParamInputs(data.parameters || []);
+
     document.getElementById('execTimeDisplay').textContent = `${data.execution_time_ms} ms`;
     document.getElementById('rowCountDisplay').textContent = data.row_count;
 
     renderTable(data.columns, data.rows);
+}
+
+// Render dynamic parameter input fields
+function renderParamInputs(params) {
+    const container = document.getElementById('paramsContainer');
+    const row = document.getElementById('paramsFormRow');
+
+    if (!params || params.length === 0) {
+        container.classList.add('d-none');
+        row.innerHTML = '';
+        return;
+    }
+
+    container.classList.remove('d-none');
+    row.innerHTML = params.map(p => {
+        return `
+        <div class="col-sm-6 col-md-4">
+            <label class="form-label small fw-semibold text-muted mb-1">${p.label || p.name}</label>
+            <div class="input-group input-group-sm">
+                <span class="input-group-text bg-white small text-muted font-monospace">${p.type}</span>
+                <input type="text" class="form-control param-input font-monospace" 
+                       data-param-name="${p.name}" 
+                       value="${p.default !== undefined ? p.default : ''}"
+                       onkeydown="if(event.key==='Enter'){executeCurrentQuery();}">
+            </div>
+        </div>
+        `;
+    }).join('') + `
+        <div class="col-12 mt-2 d-flex justify-content-end">
+            <button type="button" class="btn btn-sm btn-outline-primary" onclick="executeCurrentQuery()">
+                <i class="bi bi-arrow-repeat me-1"></i> Apply Parameters & Run
+            </button>
+        </div>
+    `;
+}
+
+// Switch between Call Query and DDL definition
+function switchCodeView(view) {
+    activeCodeView = view;
+    document.getElementById('btnViewCall').classList.toggle('active', view === 'call');
+    document.getElementById('btnViewDdl').classList.toggle('active', view === 'ddl');
+    updateCodeDisplay(cachedData);
+}
+
+function updateCodeDisplay(data) {
+    const codeDisplay = document.getElementById('sqlCodeDisplay');
+    if (activeCodeView === 'ddl' && data && data.definition) {
+        codeDisplay.textContent = data.definition;
+    } else if (data && data.sql) {
+        codeDisplay.textContent = data.sql;
+    }
 }
 
 // Render dynamic table headers & rows
@@ -231,7 +376,7 @@ function renderTable(columns, rows) {
 function runCustomSql() {
     const sql = document.getElementById('customSqlInput').value.trim();
     if (!sql) {
-        alert('Please enter a SQL query.');
+        alert('Please enter a SQL query or CALL statement.');
         return;
     }
 
@@ -248,12 +393,15 @@ function runCustomSql() {
         }
 
         const data = res.data;
-        document.getElementById('queryTitleDisplay').textContent = 'Custom User SQL Execution';
+        document.getElementById('queryTitleDisplay').textContent = 'Custom SQL / Procedure Execution';
         document.getElementById('queryCategoryBadge').textContent = 'Custom Console';
-        document.getElementById('queryDescriptionDisplay').textContent = 'Ad-hoc query executed safely against live schema.';
+        document.getElementById('queryDescriptionDisplay').textContent = 'Ad-hoc query executed safely against live database schema.';
         document.getElementById('sqlCodeDisplay').textContent = data.sql;
         document.getElementById('execTimeDisplay').textContent = `${data.execution_time_ms} ms`;
         document.getElementById('rowCountDisplay').textContent = data.row_count;
+
+        document.getElementById('paramsContainer').classList.add('d-none');
+        document.getElementById('btnViewDdl').classList.add('d-none');
 
         renderTable(data.columns, data.rows);
     })

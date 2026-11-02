@@ -17,26 +17,61 @@ def index():
             'key': key,
             'title': item['title'],
             'description': item['description'],
-            'sql': item['sql'].strip()
+            'sql': item['sql'].strip(),
+            'definition': item.get('definition', ''),
+            'procedure_name': item.get('procedure_name', ''),
+            'parameters': item.get('parameters', [])
         })
 
-    # Default to running basic_1 for initial view
+    # Allow query parameter to select active key (e.g., ?key=proc_1)
+    selected_key = request.args.get('key', 'basic_1')
+    if selected_key not in SQL_QUERIES_REGISTRY:
+        selected_key = 'basic_1'
+
     initial_result = None
     try:
-        initial_result = run_registered_query('basic_1')
+        initial_result = run_registered_query(selected_key)
     except Exception as e:
         initial_result = {'error': str(e)}
 
     return render_template('sql_operations/index.html', 
                            categories=categories, 
                            initial_result=initial_result,
+                           initial_key=selected_key,
                            total_queries=len(SQL_QUERIES_REGISTRY))
 
-@sql_ops_bp.route('/api/run/<query_key>')
+@sql_ops_bp.route('/procedures')
+@login_required
+def procedures():
+    """Dedicated interactive workbench for MySQL 8.x Stored Procedures."""
+    procedure_items = {k: v for k, v in SQL_QUERIES_REGISTRY.items() if v.get('category') == 'Stored Procedures'}
+    
+    selected_key = request.args.get('key', 'proc_1')
+    if selected_key not in procedure_items:
+        selected_key = 'proc_1'
+
+    initial_result = None
+    try:
+        initial_result = run_registered_query(selected_key)
+    except Exception as e:
+        initial_result = {'error': str(e)}
+
+    return render_template('sql_operations/procedures.html', 
+                           procedures=procedure_items, 
+                           selected_key=selected_key,
+                           initial_result=initial_result)
+
+@sql_ops_bp.route('/api/run/<query_key>', methods=['GET', 'POST'])
 @login_required
 def api_run_query(query_key):
     try:
-        result = run_registered_query(query_key)
+        params = {}
+        if request.method == 'POST':
+            params = request.get_json() or {}
+        elif request.args:
+            params = request.args.to_dict()
+
+        result = run_registered_query(query_key, params=params)
         return jsonify({'success': True, 'data': result})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 400

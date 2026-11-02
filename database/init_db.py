@@ -111,6 +111,37 @@ def create_views(db):
             print(f"Notice: view creation warning: {e}")
             db.rollback()
 
+def create_procedures(db):
+    """Create MySQL stored procedures from procedures.sql if running on MySQL."""
+    if 'mysql' not in str(engine.url):
+        return
+
+    procedures_path = os.path.join(os.path.dirname(__file__), 'procedures.sql')
+    if not os.path.exists(procedures_path):
+        return
+
+    try:
+        with open(procedures_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        # Split on $$ delimiter to handle multiple DELIMITER $$ blocks
+        blocks = content.split('$$')
+        for block in blocks:
+            sql = block.strip()
+            if not sql or sql.startswith('DELIMITER'):
+                continue
+            sql = sql.replace('DELIMITER ;', '').strip()
+            if sql:
+                try:
+                    db.execute(text(sql))
+                    db.commit()
+                except Exception as e:
+                    print(f"Notice: stored procedure creation notice: {e}")
+                    db.rollback()
+        print("[OK] MySQL Stored Procedures registered successfully.")
+    except Exception as e:
+        print(f"Notice: could not load procedures.sql: {e}")
+
 def seed_sample_data(db):
     """Seed initial sample data idempotently if tables are empty."""
     # 1. Branches
@@ -262,6 +293,7 @@ def init_database():
 
     with get_db() as db:
         create_views(db)
+        create_procedures(db)
         seed_sample_data(db)
 
     print("[OK] Database initialization complete!")

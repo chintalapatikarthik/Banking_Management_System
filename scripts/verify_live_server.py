@@ -56,6 +56,7 @@ def verify_server():
         ('/employees', 'Staff & Officers Directory'),
         ('/branches', 'Operating Branches'),
         ('/sql-operations', 'SQL Operations & Database Analytics'),
+        ('/sql-operations/procedures', 'Stored Procedures Workbench'),
         ('/reports', 'Executive Reporting & Analytics')
     ]
 
@@ -66,8 +67,8 @@ def verify_server():
             assert expected_title in content
             print(f"[PASS] GET {path} -> 200 OK ({expected_title})")
 
-    # 6. Test SQL Query API
-    sql_test_keys = ['basic_1', 'join_1', 'agg_1', 'subquery_1', 'view_1', 'report_1']
+    # 6. Test SQL Query API (including Stored Procedures)
+    sql_test_keys = ['basic_1', 'join_1', 'agg_1', 'subquery_1', 'view_1', 'proc_1', 'proc_2', 'proc_3', 'proc_4', 'proc_5', 'report_1']
     for key in sql_test_keys:
         with opener.open(f"{base_url}/sql-operations/api/run/{key}") as resp:
             assert resp.status == 200
