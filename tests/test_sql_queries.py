@@ -161,7 +161,7 @@ def test_updates_and_deletes_queries(app, client):
         # update_2: Change customer email
         u2 = run_registered_query('update_2')
         assert u2['row_count'] >= 1
-        assert u2['rows'][0]['email'] == 'rahul.sharma.new@example.com'
+        assert u2['rows'][0]['email'] == 'priya.patel.updated@example.com'
 
         # update_3: Update branch location
         u3 = run_registered_query('update_3')

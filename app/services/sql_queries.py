@@ -576,17 +576,17 @@ WHERE account_id = 201;
     'update_2': {
         'category': 'Updates & Deletes',
         'title': 'Change Customer Email',
-        'description': 'Updates the registered email address for customer ID 101 to rahul.sharma.new@example.com and verifies the profile.',
+        'description': 'Updates the registered email address for customer ID 102 to priya.patel.updated@example.com and verifies the profile.',
         'sql': """
 -- 1. Change Customer Email:
 UPDATE customers 
-SET email = 'rahul.sharma.new@example.com' 
-WHERE customer_id = 101;
+SET email = 'priya.patel.updated@example.com' 
+WHERE customer_id = 102;
 
 -- 2. Verify Changed Customer Email:
 SELECT customer_id, name, email, phone, address, registration_date 
 FROM customers 
-WHERE customer_id = 101;
+WHERE customer_id = 102;
         """.strip()
     },
     'update_3': {
@@ -916,11 +916,11 @@ def _execute_update_delete(query_key, q_info, params):
 
     elif query_key == 'update_2':
         execute_raw_sql(
-            "UPDATE customers SET email = 'rahul.sharma.new@example.com' WHERE customer_id = 101",
+            "UPDATE customers SET email = 'priya.patel.updated@example.com' WHERE customer_id = 102",
             commit=True
         )
         return execute_raw_sql(
-            "SELECT customer_id, name, email, phone, address, registration_date, 'Email Changed Successfully' AS status_check FROM customers WHERE customer_id = 101",
+            "SELECT customer_id, name, email, phone, address, registration_date, 'Email Changed Successfully' AS status_check FROM customers WHERE customer_id = 102",
             fetch_all=True
         )
 
