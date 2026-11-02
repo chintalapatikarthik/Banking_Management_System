@@ -105,6 +105,25 @@ CREATE TABLE users (
         REFERENCES employees(employee_id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- 8. Query History Table
+CREATE TABLE query_history (
+    history_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NULL,
+    username VARCHAR(50) NULL,
+    question_id INT NULL,
+    query_key VARCHAR(50) NULL,
+    query_title VARCHAR(150) NOT NULL,
+    category VARCHAR(50) NOT NULL,
+    sql_text VARCHAR(2000) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'SUCCESS',
+    execution_time_ms DECIMAL(10, 2) DEFAULT 0.00,
+    row_count INT DEFAULT 0,
+    error_message VARCHAR(500) NULL,
+    executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_history_user FOREIGN KEY (user_id)
+        REFERENCES users(user_id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Re-enable foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;
 

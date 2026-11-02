@@ -7,7 +7,7 @@ from decimal import Decimal
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from app.database import engine, Base, get_db
-from app.models import Branch, Customer, Account, Transaction, Loan, Employee, User
+from app.models import Branch, Customer, Account, Transaction, Loan, Employee, User, QueryHistory
 from app.config import Config
 from sqlalchemy import text
 
@@ -248,7 +248,7 @@ def seed_sample_data(db):
 
 def clear_all_tables(db):
     """Truncate/clear all tables for clean reseeding."""
-    table_names = ['transactions', 'loans', 'accounts', 'users', 'employees', 'branches', 'customers']
+    table_names = ['query_history', 'transactions', 'loans', 'accounts', 'users', 'employees', 'branches', 'customers']
     # If SQLite, disable foreign key checks temporarily
     is_sqlite = 'sqlite' in str(engine.url)
     if is_sqlite:

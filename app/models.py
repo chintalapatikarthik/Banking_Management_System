@@ -216,3 +216,38 @@ class User(Base, UserMixin):
             'employee_id': self.employee_id,
             'is_active': self.is_active
         }
+
+class QueryHistory(Base):
+    __tablename__ = 'query_history'
+
+    history_id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey('users.user_id', ondelete='SET NULL'), nullable=True)
+    username = Column(String(50), nullable=True)
+    question_id = Column(Integer, nullable=True)
+    query_key = Column(String(50), nullable=True)
+    query_title = Column(String(150), nullable=False)
+    category = Column(String(50), nullable=False)
+    sql_text = Column(String(2000), nullable=False)
+    status = Column(String(20), nullable=False, default='SUCCESS') # 'SUCCESS', 'ERROR', 'BLOCKED'
+    execution_time_ms = Column(Numeric(10, 2), default=Decimal('0.00'))
+    row_count = Column(Integer, default=0)
+    error_message = Column(String(500), nullable=True)
+    executed_at = Column(DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'history_id': self.history_id,
+            'user_id': self.user_id,
+            'username': self.username or 'System User',
+            'question_id': self.question_id,
+            'query_key': self.query_key,
+            'query_title': self.query_title,
+            'category': self.category,
+            'sql_text': self.sql_text,
+            'status': self.status,
+            'execution_time_ms': float(self.execution_time_ms or 0.0),
+            'row_count': self.row_count,
+            'error_message': self.error_message,
+            'executed_at': self.executed_at.strftime('%Y-%m-%d %H:%M:%S') if self.executed_at else ''
+        }
+

@@ -70,14 +70,26 @@
                     <span>Employees</span>
                 </a>
 
-                <div class="nav-section-title">Analytics & SQL</div>
-                <a href="{{ url_for('sql_ops.index') }}" class="sidebar-link {% if 'sql_ops' in request.endpoint %}active{% endif %}">
+                <div class="nav-section-title">SQL & Intelligence</div>
+                <a href="{{ url_for('sql_ops.index') }}" class="sidebar-link {% if request.endpoint == 'sql_ops.index' %}active{% endif %}">
                     <i class="bi bi-terminal-fill"></i>
-                    <span>SQL Operations</span>
+                    <span>SQL Query Lab</span>
+                </a>
+                <a href="{{ url_for('sql_ops.views_page') }}" class="sidebar-link {% if request.endpoint == 'sql_ops.views_page' %}active{% endif %}">
+                    <i class="bi bi-table"></i>
+                    <span>SQL Views</span>
+                </a>
+                <a href="{{ url_for('sql_ops.procedures_page') }}" class="sidebar-link {% if request.endpoint == 'sql_ops.procedures_page' %}active{% endif %}">
+                    <i class="bi bi-gear-wide-connected"></i>
+                    <span>Stored Procedures</span>
                 </a>
                 <a href="{{ url_for('report.index') }}" class="sidebar-link {% if 'report' in request.endpoint %}active{% endif %}">
                     <i class="bi bi-file-earmark-bar-graph-fill"></i>
-                    <span>Reports & Export</span>
+                    <span>Reports & Analytics</span>
+                </a>
+                <a href="{{ url_for('sql_ops.history_page') }}" class="sidebar-link {% if request.endpoint == 'sql_ops.history_page' %}active{% endif %}">
+                    <i class="bi bi-clock-history"></i>
+                    <span>Query History</span>
                 </a>
             </div>
 

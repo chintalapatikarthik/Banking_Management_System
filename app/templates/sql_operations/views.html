@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}SQL Database Views{% endblock %}
+{% block page_title %}SQL Database Views{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="bg-info-subtle text-info p-3 rounded-4">
+                            <i class="bi bi-table fs-3"></i>
+                        </div>
+                        <div>
+                            <h4 class="mb-1 fw-bold">Predefined Database Views</h4>
+                            <p class="text-muted small mb-0">Virtual analytical relations pre-compiled in MySQL schema (Q26 &ndash; Q30).</p>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('sql_ops.index') }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-arrow-left me-1"></i> Back to Query Lab
+                        </a>
+                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmResetData()">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Sample Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Views Container -->
+<div class="row g-4">
+    <!-- View Navigation Tabs -->
+    <div class="col-lg-3">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="card-header bg-white border-bottom py-3">
+                <h6 class="mb-0 fw-bold"><i class="bi bi-layers text-info me-2"></i>Available Views (5)</h6>
+            </div>
+            <div class="card-body p-2">
+                <div class="nav flex-column nav-pills gap-1" id="viewsTab" role="tablist">
+                    {% for v in views %}
+                    <button class="nav-link text-start rounded-3 p-3 {% if loop.first %}active{% endif %}" 
+                            id="tab-{{ v.key }}" 
+                            data-bs-toggle="pill" 
+                            data-bs-target="#pane-{{ v.key }}" 
+                            type="button" 
+                            role="tab">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <span class="badge bg-info-subtle text-info border">Q{{ v.q_num }}</span>
+                            <small class="badge bg-secondary-subtle text-secondary">{{ v.row_count }} Rows</small>
+                        </div>
+                        <div class="fw-semibold small text-truncate">{{ v.title.split('(')[0] }}</div>
+                        <small class="text-muted d-block text-truncate" style="font-size: 0.72rem;">{{ v.sql }}</small>
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active View Display -->
+    <div class="col-lg-9">
+        <div class="tab-content" id="viewsTabContent">
+            {% for v in views %}
+            <div class="tab-pane fade {% if loop.first %}show active{% endif %}" id="pane-{{ v.key }}" role="tabpanel">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                    <div class="card-header bg-white border-bottom py-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+                        <div>
+                            <span class="badge bg-info-subtle text-info border mb-1">Q{{ v.q_num }}. Database View</span>
+                            <h5 class="mb-0 fw-bold">{{ v.title }}</h5>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="copyText('{{ v.definition | replace('\n', '\\n') | escape }}', this)">
+                                <i class="bi bi-clipboard"></i> Copy DDL
+                            </button>
+                            <button type="button" class="btn btn-primary-custom btn-sm" onclick="runViewQuery('{{ v.key }}')">
+                                <i class="bi bi-play-fill"></i> View Results
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-4">
+                        <p class="text-muted small mb-3">{{ v.description }}</p>
+
+                        <!-- Conceptual explanation -->
+                        <div class="alert alert-light border rounded-3 p-3 mb-3 small">
+                            <i class="bi bi-info-circle text-info me-1"></i>
+                            <strong>Architecture Benefit:</strong> {{ v.explanation }}
+                        </div>
+
+                        <!-- Definition Box -->
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <small class="text-muted fw-semibold">CREATE VIEW Definition (DDL):</small>
+                            </div>
+                            <pre class="bg-dark text-light p-3 rounded-3 font-monospace small mb-0" style="max-height: 180px; overflow-y: auto;">{{ v.definition }}</pre>
+                        </div>
+
+                        <!-- Execution Metrics -->
+                        <div class="d-flex flex-wrap align-items-center justify-content-between bg-light p-2 px-3 rounded-3 border small mb-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <span><i class="bi bi-stopwatch text-primary me-1"></i>Execution Time: <strong>{{ v.execution_time_ms }} ms</strong></span>
+                                <span><i class="bi bi-list-ol text-success me-1"></i>Records Returned: <strong>{{ v.row_count }}</strong></span>
+                            </div>
+                            <span class="text-muted"><i class="bi bi-check-circle-fill text-success me-1"></i>Live View in Database</span>
+                        </div>
+
+                        <!-- Data Table -->
+                        <div class="border rounded-3 overflow-hidden shadow-sm">
+                            <div class="table-responsive" style="max-height: 420px;">
+                                <table class="table custom-table align-middle mb-0" id="table-{{ v.key }}">
+                                    <thead class="sticky-top bg-light">
+                                        <tr>
+                                            {% for col in v.columns %}
+                                            <th>{{ col }}</th>
+                                            {% endfor %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for row in v.rows %}
+                                        <tr>
+                                            {% for col in v.columns %}
+                                            <td>{{ row[col] if row[col] is not none else '<span class="text-muted">NULL</span>' }}</td>
+                                            {% endfor %}
+                                        </tr>
+                                        {% endfor %}
+                                        {% if not v.rows %}
+                                        <tr><td colspan="{{ v.columns|length or 1 }}" class="text-center py-4 text-muted">No records found.</td></tr>
+                                        {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function runViewQuery(key) {
+    fetch('/api/sql/execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question_id: key })
+    })
+    .then(res => res.json())
+    .then(res => {
+        if (!res.success) {
+            alert('Failed to execute view: ' + res.error);
+            return;
+        }
+        location.reload();
+    })
+    .catch(err => alert('Network error: ' + err.message));
+}
+
+function copyText(str, btn) {
+    navigator.clipboard.writeText(str).then(() => {
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-check2"></i> Copied!';
+        setTimeout(() => btn.innerHTML = orig, 1500);
+    });
+}
+
+function confirmResetData() {
+    if (!confirm('Reset database to canonical sample data?')) return;
+    fetch('/api/sql/reset-sample-data', { method: 'POST' })
+    .then(res => res.json())
+    .then(res => {
+        alert(res.message);
+        location.reload();
+    });
+}
+</script>
+{% endblock %}

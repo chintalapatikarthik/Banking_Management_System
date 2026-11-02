@@ -47,7 +47,7 @@ def verify_server():
         assert "loan_distribution" in data
         print(f"[PASS] GET /api/charts -> 200 OK (Loaded 6 dynamic chart datasets)")
 
-    # 5. Test Customers, Accounts, Transactions, Loans, Employees, Branches
+    # 5. Test Core Management & Navigation Pages
     endpoints = [
         ('/customers', 'Customer Directory'),
         ('/accounts', 'Bank Accounts Portfolio'),
@@ -55,8 +55,11 @@ def verify_server():
         ('/loans', 'Active Loans Portfolio'),
         ('/employees', 'Staff & Officers Directory'),
         ('/branches', 'Operating Branches'),
-        ('/sql-operations', 'SQL Operations & Database Analytics'),
-        ('/reports', 'Executive Reporting & Analytics')
+        ('/sql-operations/lab', 'SQL Query Lab'),
+        ('/sql-operations/views', 'Predefined Database Views'),
+        ('/sql-operations/procedures', 'Stored Procedures Execution Engine'),
+        ('/sql-operations/history', 'Query Execution History'),
+        ('/reports', 'Reports & Analytics')
     ]
 
     for path, expected_title in endpoints:
@@ -66,30 +69,77 @@ def verify_server():
             assert expected_title in content
             print(f"[PASS] GET {path} -> 200 OK ({expected_title})")
 
-    # 6. Test SQL Query API (including Stored Procedures and Updates & Deletes)
-    sql_test_keys = ['basic_1', 'join_1', 'agg_1', 'subquery_1', 'view_1', 'proc_1', 'proc_3', 'update_1', 'update_2', 'update_3', 'delete_1', 'delete_2', 'report_1']
-    for key in sql_test_keys:
-        with opener.open(f"{base_url}/sql-operations/api/run/{key}") as resp:
+    # 6. Test Direct Shortcuts
+    shortcuts = [
+        ('/sql-lab', 'SQL Query Lab'),
+        ('/sql-views', 'Predefined Database Views'),
+        ('/stored-procedures', 'Stored Procedures'),
+        ('/sql-history', 'Query Execution History')
+    ]
+    for path, title_part in shortcuts:
+        with opener.open(f"{base_url}{path}") as resp:
+            assert resp.status == 200
+            content = resp.read().decode('utf-8')
+            assert title_part in content
+            print(f"[PASS] Shortcut GET {path} -> 200 OK")
+
+    # 7. Test RESTful SQL APIs
+    # 7.1 GET /api/sql/questions
+    with opener.open(f"{base_url}/api/sql/questions") as resp:
+        assert resp.status == 200
+        res = json.loads(resp.read().decode('utf-8'))
+        assert res['success'] is True
+        assert res['count'] == 41
+        print(f"[PASS] GET /api/sql/questions -> 200 OK (Loaded all 41 questions)")
+
+    # 7.2 GET /api/sql/categories
+    with opener.open(f"{base_url}/api/sql/categories") as resp:
+        assert resp.status == 200
+        res = json.loads(resp.read().decode('utf-8'))
+        assert res['success'] is True
+        assert len(res['data']) == 8
+        print(f"[PASS] GET /api/sql/categories -> 200 OK (Loaded 8 categories)")
+
+    # 7.3 POST /api/sql/execute for multiple canonical questions
+    canonical_test_keys = [1, 5, 11, 16, 21, 26, 31, 35, 36]
+    for q_id in canonical_test_keys:
+        req = urllib.request.Request(
+            f"{base_url}/api/sql/execute",
+            data=json.dumps({'question_id': q_id}).encode('utf-8'),
+            headers={'Content-Type': 'application/json'}
+        )
+        with opener.open(req) as resp:
             assert resp.status == 200
             res = json.loads(resp.read().decode('utf-8'))
             assert res['success'] is True
-            print(f"[PASS] GET /sql-operations/api/run/{key} -> 200 OK ({res['data']['row_count']} rows returned in {res['data']['execution_time_ms']}ms)")
+            print(f"[PASS] POST /api/sql/execute [Q{q_id}] -> 200 OK ({res['data']['row_count']} rows returned in {res['data']['execution_time_ms']}ms)")
 
-    # 7. Test CSV Export
+    # 7.4 GET /api/sql/history
+    with opener.open(f"{base_url}/api/sql/history") as resp:
+        assert resp.status == 200
+        res = json.loads(resp.read().decode('utf-8'))
+        assert res['success'] is True
+        assert len(res['data']) >= len(canonical_test_keys)
+        print(f"[PASS] GET /api/sql/history -> 200 OK ({len(res['data'])} audit records logged)")
+
+    # 8. Test CSV Export
     with opener.open(f"{base_url}/reports/export/top_balance") as resp:
         assert resp.status == 200
         csv_text = resp.read().decode('utf-8')
         assert "customer_name" in csv_text or "customer_id" in csv_text
         print("[PASS] GET /reports/export/top_balance -> 200 OK (CSV generated)")
 
-    # 8. Test Reset Sample Data API endpoint & confirm pristine state
-    req = urllib.request.Request(f"{base_url}/sql-operations/api/reset-sample-data", data=b'{}', headers={'Content-Type': 'application/json'})
+    # 9. Clean Reset Database to Canonical Sample Dataset
+    req = urllib.request.Request(
+        f"{base_url}/api/sql/reset-sample-data",
+        data=b'{}',
+        headers={'Content-Type': 'application/json'}
+    )
     with opener.open(req) as resp:
         assert resp.status == 200
         res = json.loads(resp.read().decode('utf-8'))
         assert res['success'] is True
-        print(f"[PASS] POST /sql-operations/api/reset-sample-data -> 200 OK ({res['message']})")
-
+        print(f"[PASS] POST /api/sql/reset-sample-data -> 200 OK ({res['message']})")
 
     print("\n" + "="*60)
     print("ALL LIVE SERVER INTEGRATION CHECKS PASSED SUCCESSFULLY!")

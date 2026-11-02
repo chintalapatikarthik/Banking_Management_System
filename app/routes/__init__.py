@@ -7,6 +7,7 @@ from app.routes.loan_routes import loan_bp
 from app.routes.employee_routes import employee_bp
 from app.routes.branch_routes import branch_bp
 from app.routes.sql_ops_routes import sql_ops_bp
+from app.routes.sql_api_routes import sql_api_bp
 from app.routes.report_routes import report_bp
 
 def register_blueprints(app):
@@ -20,4 +21,5 @@ def register_blueprints(app):
     app.register_blueprint(employee_bp)
     app.register_blueprint(branch_bp)
     app.register_blueprint(sql_ops_bp)
+    app.register_blueprint(sql_api_bp)
     app.register_blueprint(report_bp)

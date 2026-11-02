@@ -1,61 +1,102 @@
 {% extends "base.html" %}
 
-{% block title %}Financial Reports & Intelligence{% endblock %}
-{% block page_title %}Executive Reporting & Analytics{% endblock %}
+{% block title %}Executive Financial Reports & Analytics{% endblock %}
+{% block page_title %}Reports & Analytics{% endblock %}
 
 {% block content %}
-<div class="card card-table-wrapper mb-4">
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="bg-primary-subtle text-primary p-3 rounded-4">
+                            <i class="bi bi-file-earmark-bar-graph-fill fs-3"></i>
+                        </div>
+                        <div>
+                            <h4 class="mb-1 fw-bold">Executive Reports & SQL Analytics</h4>
+                            <p class="text-muted small mb-0">Visual financial analytics and portfolio distributions generated from canonical SQL analysis queries (Q36 &ndash; Q41).</p>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('sql_ops.index') }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-terminal me-1"></i> Open in SQL Lab
+                        </a>
+                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmResetData()">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Sample Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card card-table-wrapper mb-4 border-0 shadow-sm rounded-4 overflow-hidden">
     <!-- Report Navigation Tabs -->
     <div class="card-header bg-white border-bottom p-0">
         <ul class="nav nav-tabs border-0 px-3 pt-2" id="reportTabs" role="tablist">
             <li class="nav-item">
                 <button class="nav-link py-3 px-3 active fw-semibold small" id="top-balance-tab" data-bs-toggle="tab" data-bs-target="#top-balance" type="button">
-                    <i class="bi bi-trophy text-warning me-1"></i> Top 5 High Net-Worth
+                    <i class="bi bi-trophy text-warning me-1"></i> Top 5 High Net-Worth (Q36)
                 </button>
             </li>
             <li class="nav-item">
                 <button class="nav-link py-3 px-3 fw-semibold small" id="active-cust-tab" data-bs-toggle="tab" data-bs-target="#active-cust" type="button">
-                    <i class="bi bi-activity text-primary me-1"></i> Most Active Customers
+                    <i class="bi bi-activity text-primary me-1"></i> Most Active Customers (Q37)
                 </button>
             </li>
             <li class="nav-item">
                 <button class="nav-link py-3 px-3 fw-semibold small" id="monthly-tx-tab" data-bs-toggle="tab" data-bs-target="#monthly-tx" type="button">
-                    <i class="bi bi-calendar-month text-success me-1"></i> Monthly Activity
+                    <i class="bi bi-calendar-month text-success me-1"></i> Monthly Activity (Q38)
                 </button>
             </li>
             <li class="nav-item">
                 <button class="nav-link py-3 px-3 fw-semibold small" id="branch-dep-tab" data-bs-toggle="tab" data-bs-target="#branch-dep" type="button">
-                    <i class="bi bi-buildings text-info me-1"></i> Branch Deposits
+                    <i class="bi bi-buildings text-info me-1"></i> Branch Deposits (Q39)
                 </button>
             </li>
             <li class="nav-item">
                 <button class="nav-link py-3 px-3 fw-semibold small" id="tx-analysis-tab" data-bs-toggle="tab" data-bs-target="#tx-analysis" type="button">
-                    <i class="bi bi-pie-chart text-purple me-1"></i> Credit vs Debit Analysis
+                    <i class="bi bi-pie-chart text-purple me-1"></i> Transaction Breakdown (Q40)
                 </button>
             </li>
             <li class="nav-item">
                 <button class="nav-link py-3 px-3 fw-semibold small" id="high-loans-tab" data-bs-toggle="tab" data-bs-target="#high-loans" type="button">
-                    <i class="bi bi-cash-stack text-danger me-1"></i> Largest Borrowers
+                    <i class="bi bi-cash-stack text-danger me-1"></i> Largest Borrowers (Q41)
                 </button>
             </li>
         </ul>
     </div>
 
     <div class="tab-content p-4" id="reportTabsContent">
-        <!-- 1. Top Balance -->
+        <!-- 1. Top Balance (Q36) -->
         <div class="tab-pane fade show active" id="top-balance" role="tabpanel">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
                 <div>
-                    <h6 class="fw-bold mb-1">{{ reports.top_balance.title }}</h6>
+                    <span class="badge bg-primary-subtle text-primary border mb-1">Q36. SQL Report</span>
+                    <h5 class="fw-bold mb-1">{{ reports.top_balance.title }}</h5>
                     <small class="text-muted">{{ reports.top_balance.description }}</small>
                 </div>
-                <a href="{{ url_for('report.export_csv', report_key='top_balance') }}" class="btn btn-outline-success btn-sm">
-                    <i class="bi bi-download me-1"></i> Download CSV Report
-                </a>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('report.export_csv', report_key='top_balance') }}" class="btn btn-outline-success btn-sm">
+                        <i class="bi bi-download me-1"></i> Download CSV
+                    </a>
+                </div>
             </div>
-            <div class="table-responsive">
-                <table class="table custom-table align-middle">
-                    <thead>
+
+            <!-- Visualization Card -->
+            <div class="card border-0 bg-light rounded-4 p-3 mb-4">
+                <h6 class="fw-bold small mb-3 text-dark"><i class="bi bi-bar-chart-fill text-warning me-1"></i>Customer Balances Ranking</h6>
+                <div style="height: 250px;">
+                    <canvas id="chartTopBalance"></canvas>
+                </div>
+            </div>
+
+            <!-- Data Table -->
+            <div class="table-responsive border rounded-3">
+                <table class="table custom-table align-middle mb-0">
+                    <thead class="bg-light">
                         <tr>
                             {% for col in reports.top_balance.columns %}
                             <th>{{ col }}</th>
@@ -66,7 +107,13 @@
                         {% for row in reports.top_balance.rows %}
                         <tr>
                             {% for col in reports.top_balance.columns %}
-                            <td>{{ row[col] }}</td>
+                            <td>
+                                {% if 'balance' in col or 'amount' in col %}
+                                <strong class="text-success">{{ row[col] | currency }}</strong>
+                                {% else %}
+                                {{ row[col] }}
+                                {% endif %}
+                            </td>
                             {% endfor %}
                         </tr>
                         {% endfor %}
@@ -75,20 +122,30 @@
             </div>
         </div>
 
-        <!-- 2. Active Customers -->
+        <!-- 2. Active Customers (Q37) -->
         <div class="tab-pane fade" id="active-cust" role="tabpanel">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
                 <div>
-                    <h6 class="fw-bold mb-1">{{ reports.active_customers.title }}</h6>
+                    <span class="badge bg-primary-subtle text-primary border mb-1">Q37. SQL Report</span>
+                    <h5 class="fw-bold mb-1">{{ reports.active_customers.title }}</h5>
                     <small class="text-muted">{{ reports.active_customers.description }}</small>
                 </div>
                 <a href="{{ url_for('report.export_csv', report_key='active_customers') }}" class="btn btn-outline-success btn-sm">
-                    <i class="bi bi-download me-1"></i> Download CSV Report
+                    <i class="bi bi-download me-1"></i> Download CSV
                 </a>
             </div>
-            <div class="table-responsive">
-                <table class="table custom-table align-middle">
-                    <thead>
+
+            <!-- Visualization Card -->
+            <div class="card border-0 bg-light rounded-4 p-3 mb-4">
+                <h6 class="fw-bold small mb-3 text-dark"><i class="bi bi-activity text-primary me-1"></i>Transaction Volume Distribution</h6>
+                <div style="height: 250px;">
+                    <canvas id="chartActiveCust"></canvas>
+                </div>
+            </div>
+
+            <div class="table-responsive border rounded-3">
+                <table class="table custom-table align-middle mb-0">
+                    <thead class="bg-light">
                         <tr>
                             {% for col in reports.active_customers.columns %}
                             <th>{{ col }}</th>
@@ -99,7 +156,13 @@
                         {% for row in reports.active_customers.rows %}
                         <tr>
                             {% for col in reports.active_customers.columns %}
-                            <td>{{ row[col] }}</td>
+                            <td>
+                                {% if col == 'total_transactions' %}
+                                <span class="badge bg-primary-subtle text-primary fw-bold">{{ row[col] }} txns</span>
+                                {% else %}
+                                {{ row[col] }}
+                                {% endif %}
+                            </td>
                             {% endfor %}
                         </tr>
                         {% endfor %}
@@ -108,20 +171,30 @@
             </div>
         </div>
 
-        <!-- 3. Monthly Transactions -->
+        <!-- 3. Monthly Transactions (Q38) -->
         <div class="tab-pane fade" id="monthly-tx" role="tabpanel">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
                 <div>
-                    <h6 class="fw-bold mb-1">{{ reports.monthly_transactions.title }}</h6>
+                    <span class="badge bg-primary-subtle text-primary border mb-1">Q38. SQL Report</span>
+                    <h5 class="fw-bold mb-1">{{ reports.monthly_transactions.title }}</h5>
                     <small class="text-muted">{{ reports.monthly_transactions.description }}</small>
                 </div>
                 <a href="{{ url_for('report.export_csv', report_key='monthly_transactions') }}" class="btn btn-outline-success btn-sm">
-                    <i class="bi bi-download me-1"></i> Download CSV Report
+                    <i class="bi bi-download me-1"></i> Download CSV
                 </a>
             </div>
-            <div class="table-responsive">
-                <table class="table custom-table align-middle">
-                    <thead>
+
+            <!-- Visualization Card -->
+            <div class="card border-0 bg-light rounded-4 p-3 mb-4">
+                <h6 class="fw-bold small mb-3 text-dark"><i class="bi bi-graph-up text-success me-1"></i>Monthly Cash Flow Dynamics (Deposits vs Withdrawals vs Transfers)</h6>
+                <div style="height: 260px;">
+                    <canvas id="chartMonthlyTx"></canvas>
+                </div>
+            </div>
+
+            <div class="table-responsive border rounded-3">
+                <table class="table custom-table align-middle mb-0">
+                    <thead class="bg-light">
                         <tr>
                             {% for col in reports.monthly_transactions.columns %}
                             <th>{{ col }}</th>
@@ -132,7 +205,19 @@
                         {% for row in reports.monthly_transactions.rows %}
                         <tr>
                             {% for col in reports.monthly_transactions.columns %}
-                            <td>{{ row[col] }}</td>
+                            <td>
+                                {% if 'deposits' in col %}
+                                <span class="text-success fw-bold">{{ row[col] | currency }}</span>
+                                {% elif 'withdrawals' in col %}
+                                <span class="text-danger fw-bold">{{ row[col] | currency }}</span>
+                                {% elif 'transfers' in col %}
+                                <span class="text-primary fw-bold">{{ row[col] | currency }}</span>
+                                {% elif 'amount' in col %}
+                                <strong>{{ row[col] | currency }}</strong>
+                                {% else %}
+                                {{ row[col] }}
+                                {% endif %}
+                            </td>
                             {% endfor %}
                         </tr>
                         {% endfor %}
@@ -141,20 +226,30 @@
             </div>
         </div>
 
-        <!-- 4. Branch Deposits -->
+        <!-- 4. Branch Deposits (Q39) -->
         <div class="tab-pane fade" id="branch-dep" role="tabpanel">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
                 <div>
-                    <h6 class="fw-bold mb-1">{{ reports.branch_deposits.title }}</h6>
+                    <span class="badge bg-primary-subtle text-primary border mb-1">Q39. SQL Report</span>
+                    <h5 class="fw-bold mb-1">{{ reports.branch_deposits.title }}</h5>
                     <small class="text-muted">{{ reports.branch_deposits.description }}</small>
                 </div>
                 <a href="{{ url_for('report.export_csv', report_key='branch_deposits') }}" class="btn btn-outline-success btn-sm">
-                    <i class="bi bi-download me-1"></i> Download CSV Report
+                    <i class="bi bi-download me-1"></i> Download CSV
                 </a>
             </div>
-            <div class="table-responsive">
-                <table class="table custom-table align-middle">
-                    <thead>
+
+            <!-- Visualization Card -->
+            <div class="card border-0 bg-light rounded-4 p-3 mb-4">
+                <h6 class="fw-bold small mb-3 text-dark"><i class="bi bi-building text-info me-1"></i>Branch Deposit Volume</h6>
+                <div style="height: 250px;">
+                    <canvas id="chartBranchDeposits"></canvas>
+                </div>
+            </div>
+
+            <div class="table-responsive border rounded-3">
+                <table class="table custom-table align-middle mb-0">
+                    <thead class="bg-light">
                         <tr>
                             {% for col in reports.branch_deposits.columns %}
                             <th>{{ col }}</th>
@@ -165,7 +260,13 @@
                         {% for row in reports.branch_deposits.rows %}
                         <tr>
                             {% for col in reports.branch_deposits.columns %}
-                            <td>{{ row[col] }}</td>
+                            <td>
+                                {% if 'deposits' in col %}
+                                <strong class="text-success">{{ row[col] | currency }}</strong>
+                                {% else %}
+                                {{ row[col] }}
+                                {% endif %}
+                            </td>
                             {% endfor %}
                         </tr>
                         {% endfor %}
@@ -174,20 +275,30 @@
             </div>
         </div>
 
-        <!-- 5. Transaction Analysis -->
+        <!-- 5. Transaction Analysis (Q40) -->
         <div class="tab-pane fade" id="tx-analysis" role="tabpanel">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
                 <div>
-                    <h6 class="fw-bold mb-1">{{ reports.tx_analysis.title }}</h6>
+                    <span class="badge bg-primary-subtle text-primary border mb-1">Q40. SQL Report</span>
+                    <h5 class="fw-bold mb-1">{{ reports.tx_analysis.title }}</h5>
                     <small class="text-muted">{{ reports.tx_analysis.description }}</small>
                 </div>
                 <a href="{{ url_for('report.export_csv', report_key='tx_analysis') }}" class="btn btn-outline-success btn-sm">
-                    <i class="bi bi-download me-1"></i> Download CSV Report
+                    <i class="bi bi-download me-1"></i> Download CSV
                 </a>
             </div>
-            <div class="table-responsive">
-                <table class="table custom-table align-middle">
-                    <thead>
+
+            <!-- Visualization Card -->
+            <div class="card border-0 bg-light rounded-4 p-3 mb-4">
+                <h6 class="fw-bold small mb-3 text-dark"><i class="bi bi-pie-chart text-purple me-1"></i>Customer Cash Movement Distribution</h6>
+                <div style="height: 260px;">
+                    <canvas id="chartTxAnalysis"></canvas>
+                </div>
+            </div>
+
+            <div class="table-responsive border rounded-3">
+                <table class="table custom-table align-middle mb-0">
+                    <thead class="bg-light">
                         <tr>
                             {% for col in reports.tx_analysis.columns %}
                             <th>{{ col }}</th>
@@ -198,7 +309,19 @@
                         {% for row in reports.tx_analysis.rows %}
                         <tr>
                             {% for col in reports.tx_analysis.columns %}
-                            <td>{{ row[col] }}</td>
+                            <td>
+                                {% if 'deposits' in col %}
+                                <span class="text-success">{{ row[col] | currency }}</span>
+                                {% elif 'withdrawals' in col %}
+                                <span class="text-danger">{{ row[col] | currency }}</span>
+                                {% elif 'transfers' in col %}
+                                <span class="text-primary">{{ row[col] | currency }}</span>
+                                {% elif 'amount' in col %}
+                                <strong>{{ row[col] | currency }}</strong>
+                                {% else %}
+                                {{ row[col] }}
+                                {% endif %}
+                            </td>
                             {% endfor %}
                         </tr>
                         {% endfor %}
@@ -207,20 +330,30 @@
             </div>
         </div>
 
-        <!-- 6. High Loans -->
+        <!-- 6. High Loans (Q41) -->
         <div class="tab-pane fade" id="high-loans" role="tabpanel">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
                 <div>
-                    <h6 class="fw-bold mb-1">{{ reports.high_loans.title }}</h6>
+                    <span class="badge bg-primary-subtle text-primary border mb-1">Q41. SQL Report</span>
+                    <h5 class="fw-bold mb-1">{{ reports.high_loans.title }}</h5>
                     <small class="text-muted">{{ reports.high_loans.description }}</small>
                 </div>
                 <a href="{{ url_for('report.export_csv', report_key='high_loans') }}" class="btn btn-outline-success btn-sm">
-                    <i class="bi bi-download me-1"></i> Download CSV Report
+                    <i class="bi bi-download me-1"></i> Download CSV
                 </a>
             </div>
-            <div class="table-responsive">
-                <table class="table custom-table align-middle">
-                    <thead>
+
+            <!-- Visualization Card -->
+            <div class="card border-0 bg-light rounded-4 p-3 mb-4">
+                <h6 class="fw-bold small mb-3 text-dark"><i class="bi bi-cash-stack text-danger me-1"></i>Top Credit Exposures</h6>
+                <div style="height: 250px;">
+                    <canvas id="chartHighLoans"></canvas>
+                </div>
+            </div>
+
+            <div class="table-responsive border rounded-3">
+                <table class="table custom-table align-middle mb-0">
+                    <thead class="bg-light">
                         <tr>
                             {% for col in reports.high_loans.columns %}
                             <th>{{ col }}</th>
@@ -231,7 +364,13 @@
                         {% for row in reports.high_loans.rows %}
                         <tr>
                             {% for col in reports.high_loans.columns %}
-                            <td>{{ row[col] }}</td>
+                            <td>
+                                {% if 'loan_amount' in col %}
+                                <strong class="text-danger">{{ row[col] | currency }}</strong>
+                                {% else %}
+                                {{ row[col] }}
+                                {% endif %}
+                            </td>
                             {% endfor %}
                         </tr>
                         {% endfor %}
@@ -241,4 +380,245 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    renderCharts();
+});
+
+// Re-render charts on tab switch to ensure responsive sizing
+const tabButtons = document.querySelectorAll('button[data-bs-toggle="tab"]');
+tabButtons.forEach(btn => {
+    btn.addEventListener('shown.bs.tab', function() {
+        window.dispatchEvent(new Event('resize'));
+    });
+});
+
+function renderCharts() {
+    // 1. Top Balance Chart
+    const topBalRows = {{ reports.top_balance.rows | tojson }};
+    const ctxTopBal = document.getElementById('chartTopBalance');
+    if (ctxTopBal && topBalRows && topBalRows.length) {
+        new Chart(ctxTopBal, {
+            type: 'bar',
+            data: {
+                labels: topBalRows.map(r => r.customer_name),
+                datasets: [{
+                    label: 'Total Liquid Balance (₹)',
+                    data: topBalRows.map(r => r.total_balance),
+                    backgroundColor: 'rgba(217, 119, 6, 0.85)',
+                    borderColor: 'rgb(217, 119, 6)',
+                    borderWidth: 1,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: {
+                        ticks: {
+                            callback: val => '₹' + Number(val).toLocaleString('en-IN')
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 2. Active Customers Chart
+    const activeCustRows = {{ reports.active_customers.rows | tojson }};
+    const ctxActiveCust = document.getElementById('chartActiveCust');
+    if (ctxActiveCust && activeCustRows && activeCustRows.length) {
+        new Chart(ctxActiveCust, {
+            type: 'bar',
+            data: {
+                labels: activeCustRows.map(r => r.customer_name),
+                datasets: [{
+                    label: 'Total Transactions',
+                    data: activeCustRows.map(r => r.total_transactions),
+                    backgroundColor: 'rgba(37, 99, 235, 0.85)',
+                    borderColor: 'rgb(37, 99, 235)',
+                    borderWidth: 1,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    }
+
+    // 3. Monthly Activity Line Chart
+    const monthlyRows = {{ reports.monthly_transactions.rows | tojson }};
+    const ctxMonthly = document.getElementById('chartMonthlyTx');
+    if (ctxMonthly && monthlyRows && monthlyRows.length) {
+        new Chart(ctxMonthly, {
+            type: 'line',
+            data: {
+                labels: monthlyRows.map(r => r.month_year || r.year_month),
+                datasets: [
+                    {
+                        label: 'Deposits (₹)',
+                        data: monthlyRows.map(r => r.total_deposits),
+                        borderColor: '#059669',
+                        backgroundColor: 'rgba(5, 150, 105, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Withdrawals (₹)',
+                        data: monthlyRows.map(r => r.total_withdrawals),
+                        borderColor: '#dc2626',
+                        backgroundColor: 'rgba(220, 38, 38, 0.05)',
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Transfers (₹)',
+                        data: monthlyRows.map(r => r.total_transfers),
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.05)',
+                        fill: true,
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        ticks: {
+                            callback: val => '₹' + Number(val).toLocaleString('en-IN')
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 4. Branch Deposits Chart
+    const branchRows = {{ reports.branch_deposits.rows | tojson }};
+    const ctxBranch = document.getElementById('chartBranchDeposits');
+    if (ctxBranch && branchRows && branchRows.length) {
+        new Chart(ctxBranch, {
+            type: 'bar',
+            data: {
+                labels: branchRows.map(r => r.branch_name),
+                datasets: [{
+                    label: 'Deposit Volume (₹)',
+                    data: branchRows.map(r => r.total_deposits),
+                    backgroundColor: 'rgba(8, 145, 178, 0.85)',
+                    borderColor: 'rgb(8, 145, 178)',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        ticks: {
+                            callback: val => '₹' + Number(val).toLocaleString('en-IN')
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 5. Transaction Analysis Grouped Bar
+    const txAnalysisRows = {{ reports.tx_analysis.rows | tojson }};
+    const ctxTxAnalysis = document.getElementById('chartTxAnalysis');
+    if (ctxTxAnalysis && txAnalysisRows && txAnalysisRows.length) {
+        new Chart(ctxTxAnalysis, {
+            type: 'bar',
+            data: {
+                labels: txAnalysisRows.slice(0, 7).map(r => r.customer_name),
+                datasets: [
+                    {
+                        label: 'Deposits',
+                        data: txAnalysisRows.slice(0, 7).map(r => r.total_deposits),
+                        backgroundColor: '#059669',
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Withdrawals',
+                        data: txAnalysisRows.slice(0, 7).map(r => r.total_withdrawals),
+                        backgroundColor: '#dc2626',
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Transfers',
+                        data: txAnalysisRows.slice(0, 7).map(r => r.total_transfers),
+                        backgroundColor: '#2563eb',
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        ticks: {
+                            callback: val => '₹' + Number(val).toLocaleString('en-IN')
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 6. High Loans Chart
+    const loanRows = {{ reports.high_loans.rows | tojson }};
+    const ctxLoans = document.getElementById('chartHighLoans');
+    if (ctxLoans && loanRows && loanRows.length) {
+        new Chart(ctxLoans, {
+            type: 'bar',
+            data: {
+                labels: loanRows.map(r => r.customer_name),
+                datasets: [{
+                    label: 'Loan Liability (₹)',
+                    data: loanRows.map(r => r.total_loan_amount),
+                    backgroundColor: 'rgba(220, 38, 38, 0.85)',
+                    borderColor: 'rgb(220, 38, 38)',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        ticks: {
+                            callback: val => '₹' + Number(val).toLocaleString('en-IN')
+                        }
+                    }
+                }
+            }
+        });
+    }
+}
+
+function confirmResetData() {
+    if (!confirm('Reset database to canonical sample data?')) return;
+    fetch('/api/sql/reset-sample-data', { method: 'POST' })
+    .then(res => res.json())
+    .then(res => {
+        alert(res.message);
+        location.reload();
+    });
+}
+</script>
 {% endblock %}

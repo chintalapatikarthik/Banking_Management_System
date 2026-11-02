@@ -1,0 +1,374 @@
+{% extends "base.html" %}
+
+{% block title %}Stored Procedures Execution Engine{% endblock %}
+{% block page_title %}Stored Procedures{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="bg-purple-subtle text-purple p-3 rounded-4">
+                            <i class="bi bi-gear-wide-connected fs-3"></i>
+                        </div>
+                        <div>
+                            <h4 class="mb-1 fw-bold">Stored Procedures Execution Engine</h4>
+                            <p class="text-muted small mb-0">Server-side procedural logic encapsulating business constraints and transactions (Q31 &ndash; Q35).</p>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('sql_ops.index') }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-arrow-left me-1"></i> Back to Query Lab
+                        </a>
+                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmResetData()">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Sample Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Procedures Navigation Menu -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="card-header bg-white border-bottom py-3">
+                <h6 class="mb-0 fw-bold"><i class="bi bi-cpu text-purple me-2"></i>Database Procedures (5)</h6>
+            </div>
+            <div class="card-body p-2">
+                <div class="list-group list-group-flush gap-1" id="procListGroup">
+                    {% for p in procedures %}
+                    <button type="button" 
+                            class="list-group-item list-group-item-action border-0 rounded-3 p-3 proc-menu-btn {% if p.key == selected_key %}active{% endif %}"
+                            data-key="{{ p.key }}"
+                            data-name="{{ p.procedure_name }}"
+                            data-title="{{ p.title }}"
+                            data-desc="{{ p.description }}"
+                            data-exp="{{ p.explanation }}"
+                            data-sql="{{ p.sql }}"
+                            data-ddl="{{ p.definition }}"
+                            data-params='{{ p.parameters | tojson }}'
+                            onclick="selectProcedure(this)">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <span class="badge {% if p.key == selected_key %}bg-white text-purple{% else %}bg-purple-subtle text-purple border{% endif %} fw-bold">Q{{ p.q_num }}</span>
+                            <code class="{% if p.key == selected_key %}text-white{% else %}text-purple{% endif %} small">{{ p.procedure_name }}</code>
+                        </div>
+                        <div class="fw-semibold small text-truncate">{{ p.title.split('(')[0] }}</div>
+                        <small class="{% if p.key == selected_key %}text-white-50{% else %}text-muted{% endif %} d-block" style="font-size: 0.72rem;">
+                            {{ p.parameters|length }} Parameters
+                        </small>
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive Execution Workbench -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="card-header bg-white border-bottom py-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <div>
+                    <span class="badge bg-purple-subtle text-purple border mb-1" id="procBadgeHeader">Stored Procedure</span>
+                    <h5 class="mb-0 fw-bold" id="procTitleHeader">List Accounts of a Customer (sp_list_customer_accounts)</h5>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btnToggleDdl" onclick="toggleDdlView()">
+                        <i class="bi bi-code-slash"></i> View CREATE DDL
+                    </button>
+                    <button type="button" class="btn btn-primary-custom btn-sm" id="btnRunProcedure" onclick="runActiveProcedure()">
+                        <i class="bi bi-play-fill"></i> Execute Procedure
+                    </button>
+                </div>
+            </div>
+
+            <div class="card-body p-4">
+                <p class="text-muted small mb-3" id="procDescriptionText">
+                    Executes stored procedure sp_list_customer_accounts to list all bank accounts held by a customer.
+                </p>
+
+                <!-- DDL Definition Box (Collapsible) -->
+                <div class="mb-3 d-none" id="procDdlBox">
+                    <small class="text-muted fw-semibold d-block mb-1">Procedure DDL (CREATE PROCEDURE Definition):</small>
+                    <pre class="bg-dark text-light p-3 rounded-3 font-monospace small mb-0" id="procDdlCode" style="max-height: 180px; overflow-y: auto;"></pre>
+                </div>
+
+                <!-- Input Parameters Form -->
+                <div class="card bg-light border-0 rounded-3 p-3 mb-3">
+                    <h6 class="fw-bold small mb-2 text-dark"><i class="bi bi-sliders text-purple me-1"></i>Input Parameters</h6>
+                    <div class="row g-2" id="procParamsRow">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+
+                <!-- Live Dynamic CALL Statement Box -->
+                <div class="mb-3">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <small class="text-muted fw-semibold">SQL Invocation Statement (CALL):</small>
+                        <button type="button" class="btn btn-sm btn-link p-0 text-decoration-none" onclick="copyCallSql()">
+                            <i class="bi bi-clipboard"></i> Copy CALL SQL
+                        </button>
+                    </div>
+                    <pre class="bg-dark text-light p-3 rounded-3 font-monospace small mb-0" id="procCallSqlBox">CALL sp_list_customer_accounts(1);</pre>
+                </div>
+
+                <!-- Metrics -->
+                <div class="d-flex flex-wrap align-items-center justify-content-between bg-light p-2 px-3 rounded-3 border small mb-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <span><i class="bi bi-stopwatch text-primary me-1"></i>Execution Time: <strong id="procExecTime">{{ initial_result.execution_time_ms if initial_result else '0.00' }} ms</strong></span>
+                        <span><i class="bi bi-list-ol text-success me-1"></i>Records Returned: <strong id="procRowCount">{{ initial_result.row_count if initial_result else 0 }}</strong></span>
+                    </div>
+                    <span class="text-muted"><i class="bi bi-check-circle-fill text-success me-1"></i>Validated Backend Function</span>
+                </div>
+
+                <!-- Error Alert -->
+                <div class="alert alert-danger rounded-3 d-none mb-3" id="procErrorAlert">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                    <span id="procErrorMessage"></span>
+                </div>
+
+                <!-- Result Table -->
+                <div class="border rounded-3 overflow-hidden shadow-sm">
+                    <div class="table-responsive" style="max-height: 380px;">
+                        <table class="table custom-table align-middle mb-0" id="procResultTable">
+                            <thead class="sticky-top bg-light">
+                                <tr id="procTableHeader">
+                                    {% if initial_result and initial_result.columns %}
+                                        {% for col in initial_result.columns %}
+                                        <th>{{ col }}</th>
+                                        {% endfor %}
+                                    {% else %}
+                                        <th>Result</th>
+                                    {% endif %}
+                                </tr>
+                            </thead>
+                            <tbody id="procTableBody">
+                                {% if initial_result and initial_result.rows %}
+                                    {% for row in initial_result.rows %}
+                                    <tr>
+                                        {% for col in initial_result.columns %}
+                                        <td>{{ row[col] if row[col] is not none else '<span class="text-muted">NULL</span>' }}</td>
+                                        {% endfor %}
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr><td class="text-center py-4 text-muted">Click 'Execute Procedure' to test this routine.</td></tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let currentProcKey = 'q35';
+let ddlVisible = false;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Select default procedure
+    const defaultBtn = document.querySelector('.proc-menu-btn.active');
+    if (defaultBtn) {
+        selectProcedure(defaultBtn, false);
+    }
+});
+
+function selectProcedure(btn, triggerExec = true) {
+    document.querySelectorAll('.proc-menu-btn').forEach(b => {
+        b.classList.remove('active');
+        const badge = b.querySelector('.badge');
+        if (badge) {
+            badge.classList.remove('bg-white', 'text-purple');
+            badge.classList.add('bg-purple-subtle', 'text-purple', 'border');
+        }
+        const code = b.querySelector('code');
+        if (code) {
+            code.classList.remove('text-white');
+            code.classList.add('text-purple');
+        }
+    });
+
+    btn.classList.add('active');
+    const badge = btn.querySelector('.badge');
+    if (badge) {
+        badge.classList.remove('bg-purple-subtle', 'text-purple', 'border');
+        badge.classList.add('bg-white', 'text-purple');
+    }
+    const code = btn.querySelector('code');
+    if (code) {
+        code.classList.remove('text-purple');
+        code.classList.add('text-white');
+    }
+
+    currentProcKey = btn.getAttribute('data-key');
+    const name = btn.getAttribute('data-name');
+    const title = btn.getAttribute('data-title');
+    const desc = btn.getAttribute('data-desc');
+    const ddl = btn.getAttribute('data-ddl');
+    const params = JSON.parse(btn.getAttribute('data-params') || '[]');
+
+    document.getElementById('procTitleHeader').textContent = title;
+    document.getElementById('procBadgeHeader').textContent = name;
+    document.getElementById('procDescriptionText').textContent = desc;
+    document.getElementById('procDdlCode').textContent = ddl;
+
+    renderProcParams(params);
+    updateCallSqlPreview();
+
+    if (triggerExec) {
+        runActiveProcedure();
+    }
+}
+
+function renderProcParams(params) {
+    const row = document.getElementById('procParamsRow');
+    if (!params || params.length === 0) {
+        row.innerHTML = '<div class="col-12 text-muted small"><i class="bi bi-info-circle me-1"></i>This procedure requires no input parameters (0-arity).</div>';
+        return;
+    }
+
+    row.innerHTML = params.map(p => {
+        const inputType = p.type === 'INT' || p.type === 'DECIMAL' ? 'number' : (p.type === 'DATE' ? 'date' : 'text');
+        const step = p.type === 'DECIMAL' ? 'step="0.01"' : '';
+        return `
+        <div class="col-md-6">
+            <label class="form-label small fw-semibold text-muted mb-1">${p.label || p.name}</label>
+            <div class="input-group input-group-sm">
+                <span class="input-group-text font-monospace small bg-white text-muted" style="font-size:0.75rem;">${p.name}</span>
+                <input type="${inputType}" ${step} class="form-control form-control-sm active-sp-input"
+                       data-param="${p.name}"
+                       value="${p.default !== undefined ? p.default : ''}"
+                       oninput="updateCallSqlPreview()"
+                       onkeydown="if(event.key==='Enter'){runActiveProcedure();}">
+            </div>
+        </div>
+        `;
+    }).join('');
+}
+
+function updateCallSqlPreview() {
+    const inputs = document.querySelectorAll('.active-sp-input');
+    const paramVals = Array.from(inputs).map(inp => {
+        const val = inp.value;
+        return isNaN(val) || val === '' ? `'${val}'` : val;
+    });
+
+    const activeBtn = document.querySelector('.proc-menu-btn.active');
+    const name = activeBtn ? activeBtn.getAttribute('data-name') : 'sp_list_customer_accounts';
+    const callStr = `CALL ${name}(${paramVals.join(', ')});`;
+    document.getElementById('procCallSqlBox').textContent = callStr;
+}
+
+function runActiveProcedure() {
+    const runBtn = document.getElementById('btnRunProcedure');
+    runBtn.disabled = true;
+    runBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Executing...';
+    hideProcError();
+
+    const inputs = document.querySelectorAll('.active-sp-input');
+    const params = {};
+    inputs.forEach(inp => {
+        params[inp.getAttribute('data-param')] = inp.value;
+    });
+
+    fetch('/api/sql/execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            question_id: currentProcKey,
+            parameters: params
+        })
+    })
+    .then(res => res.json())
+    .then(res => {
+        runBtn.disabled = false;
+        runBtn.innerHTML = '<i class="bi bi-play-fill"></i> Execute Procedure';
+
+        if (!res.success) {
+            showProcError(res.error || 'Execution failed.');
+            return;
+        }
+
+        const data = res.data;
+        document.getElementById('procExecTime').textContent = `${data.execution_time_ms} ms`;
+        document.getElementById('procRowCount').textContent = data.row_count;
+        renderProcTable(data.columns, data.rows);
+    })
+    .catch(err => {
+        runBtn.disabled = false;
+        runBtn.innerHTML = '<i class="bi bi-play-fill"></i> Execute Procedure';
+        showProcError('Network error: ' + err.message);
+    });
+}
+
+function renderProcTable(columns, rows) {
+    const thead = document.getElementById('procTableHeader');
+    const tbody = document.getElementById('procTableBody');
+
+    if (!columns || columns.length === 0) {
+        thead.innerHTML = '<th>Result</th>';
+        tbody.innerHTML = '<tr><td class="text-center py-4 text-muted">Procedure executed successfully (0 rows returned).</td></tr>';
+        return;
+    }
+
+    thead.innerHTML = columns.map(c => `<th>${c}</th>`).join('');
+    
+    if (!rows || rows.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="${columns.length}" class="text-center py-4 text-muted">No records found.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = rows.map(r => {
+        return '<tr>' + columns.map(c => {
+            const val = r[c] !== null && r[c] !== undefined ? r[c] : '<span class="text-muted">NULL</span>';
+            return `<td>${val}</td>`;
+        }).join('') + '</tr>';
+    }).join('');
+}
+
+function toggleDdlView() {
+    ddlVisible = !ddlVisible;
+    const box = document.getElementById('procDdlBox');
+    const btn = document.getElementById('btnToggleDdl');
+    if (ddlVisible) {
+        box.classList.remove('d-none');
+        btn.innerHTML = '<i class="bi bi-eye-slash"></i> Hide DDL';
+    } else {
+        box.classList.add('d-none');
+        btn.innerHTML = '<i class="bi bi-code-slash"></i> View CREATE DDL';
+    }
+}
+
+function copyCallSql() {
+    const sql = document.getElementById('procCallSqlBox').textContent;
+    navigator.clipboard.writeText(sql).then(() => alert('CALL SQL copied to clipboard!'));
+}
+
+function showProcError(msg) {
+    document.getElementById('procErrorMessage').textContent = msg;
+    document.getElementById('procErrorAlert').classList.remove('d-none');
+}
+
+function hideProcError() {
+    document.getElementById('procErrorAlert').classList.add('d-none');
+}
+
+function confirmResetData() {
+    if (!confirm('Reset database to canonical sample data?')) return;
+    fetch('/api/sql/reset-sample-data', { method: 'POST' })
+    .then(res => res.json())
+    .then(res => {
+        alert(res.message);
+        location.reload();
+    });
+}
+</script>
+{% endblock %}

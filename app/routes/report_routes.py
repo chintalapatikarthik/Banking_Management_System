@@ -6,7 +6,8 @@ from app.services.sql_queries import run_registered_query
 
 report_bp = Blueprint('report', __name__, url_prefix='/reports')
 
-@report_bp.route('/')
+@report_bp.route('', strict_slashes=False)
+@report_bp.route('/', strict_slashes=False)
 @login_required
 def index():
     active_tab = request.args.get('tab', 'top_balance')
