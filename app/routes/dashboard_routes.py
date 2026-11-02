@@ -1,5 +1,5 @@
-from flask import Blueprint, render_template, jsonify
-from flask_login import login_required
+from flask import Blueprint, render_template, jsonify, redirect, url_for
+from flask_login import login_required, current_user
 from app.services.bank_service import BankService
 from app.services.analytics_service import AnalyticsService
 
@@ -7,7 +7,9 @@ dashboard_bp = Blueprint('dashboard', __name__)
 
 @dashboard_bp.route('/')
 def home():
-    return render_template('dashboard.html')
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard.index'))
+    return redirect(url_for('auth.login'))
 
 @dashboard_bp.route('/dashboard')
 @login_required

@@ -13,7 +13,7 @@
                 <span class="stat-label">Total Customers</span>
                 <div class="stat-icon blue"><i class="bi bi-people-fill"></i></div>
             </div>
-            <div class="stat-value">{{ summary.total_customers }}</div>
+            <div class="stat-value">{{ summary.total_customers if summary else 0 }}</div>
             <div class="text-muted small mt-2 d-flex align-items-center gap-1">
                 <i class="bi bi-person-check text-success"></i> Registered Accounts
             </div>
@@ -27,7 +27,7 @@
                 <span class="stat-label">Total Accounts</span>
                 <div class="stat-icon purple"><i class="bi bi-wallet2"></i></div>
             </div>
-            <div class="stat-value">{{ summary.total_accounts }}</div>
+            <div class="stat-value">{{ summary.total_accounts if summary else 0 }}</div>
             <div class="text-muted small mt-2 d-flex align-items-center gap-1">
                 <i class="bi bi-shield-check text-primary"></i> Active & Dormant
             </div>
@@ -41,7 +41,7 @@
                 <span class="stat-label">Total Deposits</span>
                 <div class="stat-icon green"><i class="bi bi-cash-stack"></i></div>
             </div>
-            <div class="stat-value">{{ summary.total_balance | currency }}</div>
+            <div class="stat-value">{{ (summary.total_balance if summary else 0) | currency }}</div>
             <div class="text-muted small mt-2 d-flex align-items-center gap-1">
                 <i class="bi bi-graph-up-arrow text-success"></i> Cumulative Holdings
             </div>
@@ -55,7 +55,7 @@
                 <span class="stat-label">Total Transactions</span>
                 <div class="stat-icon amber"><i class="bi bi-arrow-left-right"></i></div>
             </div>
-            <div class="stat-value">{{ summary.total_transactions }}</div>
+            <div class="stat-value">{{ summary.total_transactions if summary else 0 }}</div>
             <div class="text-muted small mt-2 d-flex align-items-center gap-1">
                 <i class="bi bi-clock-history text-warning"></i> Processed Logs
             </div>
@@ -69,7 +69,7 @@
                 <span class="stat-label">Total Credit & Loans</span>
                 <div class="stat-icon rose"><i class="bi bi-bank2"></i></div>
             </div>
-            <div class="stat-value">{{ summary.total_loan_amount | currency }}</div>
+            <div class="stat-value">{{ (summary.total_loan_amount if summary else 0) | currency }}</div>
             <div class="text-muted small mt-2 d-flex align-items-center gap-1">
                 <i class="bi bi-pie-chart text-danger"></i> Disbursed Exposure
             </div>
@@ -83,7 +83,7 @@
                 <span class="stat-label">Staff & Officers</span>
                 <div class="stat-icon cyan"><i class="bi bi-person-badge-fill"></i></div>
             </div>
-            <div class="stat-value">{{ summary.total_employees }}</div>
+            <div class="stat-value">{{ summary.total_employees if summary else 0 }}</div>
             <div class="text-muted small mt-2 d-flex align-items-center gap-1">
                 <i class="bi bi-check-all text-info"></i> Active Personnel
             </div>
@@ -97,7 +97,7 @@
                 <span class="stat-label">Operating Branches</span>
                 <div class="stat-icon blue"><i class="bi bi-building"></i></div>
             </div>
-            <div class="stat-value">{{ summary.total_branches }}</div>
+            <div class="stat-value">{{ summary.total_branches if summary else 0 }}</div>
             <div class="text-muted small mt-2 d-flex align-items-center gap-1">
                 <i class="bi bi-geo-alt text-primary"></i> Across Major Cities
             </div>

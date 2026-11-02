@@ -6,10 +6,13 @@ from app.database import get_db
 def test_deposit_operation(app):
     """Test deposit increases balance and creates transaction record."""
     with app.app_context():
-        # Account 201 has initial balance 85000.00
+        with get_db() as db:
+            acc = db.query(Account).filter_by(account_id=201).first()
+            initial_bal = float(acc.balance)
+
         res = BankService.deposit(account_id=201, amount=1500.00, description="Test Deposit")
         assert res['success'] is True
-        assert res['new_balance'] >= 86500.00
+        assert res['new_balance'] == initial_bal + 1500.00
 
         with get_db() as db:
             tx = db.query(Transaction).filter_by(transaction_id=res['transaction_id']).first()
