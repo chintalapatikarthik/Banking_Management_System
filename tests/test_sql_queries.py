@@ -15,6 +15,15 @@ def test_all_registered_sql_queries(app):
 def test_subqueries_edge_cases(app):
     """Test subquery 1 (customers with no accounts) finds Suresh Raina & Meera Nair."""
     with app.app_context():
+        from app.models import Customer
+        from app.database import get_db
+        from datetime import date
+        with get_db() as db:
+            if not db.query(Customer).filter_by(customer_id=110).first():
+                db.add(Customer(customer_id=110, name='Suresh Raina', email='suresh.raina@example.com', phone='9098765432', address='Alwal, Hyderabad', registration_date=date(2024, 3, 1)))
+                db.add(Customer(customer_id=111, name='Meera Nair', email='meera.nair@example.com', phone='9988776655', address='Gachibowli, Hyderabad', registration_date=date(2024, 4, 10)))
+                db.commit()
+
         res = run_registered_query('subquery_1')
         assert res['row_count'] >= 2
         names = [r['name'] for r in res['rows']]
@@ -142,34 +151,28 @@ def test_procedures_web_routes(client):
     assert data3['data']['row_count'] >= 1
 
 def test_updates_and_deletes_queries(app, client):
-    """Test all DML update and delete exercises."""
+    """Test the exact 5 DML update and delete exercises."""
     with app.app_context():
-        # update_1: Customer address & phone
+        # update_1: Update account balance
         u1 = run_registered_query('update_1')
         assert u1['row_count'] >= 1
-        assert 'dml_status' in u1['columns']
-        assert u1['rows'][0]['phone'] == '9876543211'
+        assert u1['rows'][0]['balance'] == 95000.00
 
-        # update_2: Salary increment
+        # update_2: Change customer email
         u2 = run_registered_query('update_2')
         assert u2['row_count'] >= 1
-        assert 'salary' in u2['columns']
+        assert u2['rows'][0]['email'] == 'rahul.sharma.new@example.com'
 
-        # update_3: Inactive status update
+        # update_3: Update branch location
         u3 = run_registered_query('update_3')
         assert u3['row_count'] >= 1
-        assert 'account_status' in u3['columns']
+        assert u3['rows'][0]['location'] == 'Cyberabad, Hyderabad'
 
-        # update_4: Loan interest concession
-        u4 = run_registered_query('update_4')
-        assert u4['row_count'] >= 1
-        assert 'interest_rate' in u4['columns']
-
-        # delete_1: Dormant accounts cleanup
+        # delete_1: Delete inactive accounts
         d1 = run_registered_query('delete_1')
         assert d1['row_count'] >= 1
 
-        # delete_2: Test customer leads cleanup
+        # delete_2: Delete customers with no accounts
         d2 = run_registered_query('delete_2')
         assert d2['row_count'] >= 1
 

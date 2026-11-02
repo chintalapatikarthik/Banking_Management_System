@@ -217,12 +217,11 @@ The dedicated **SQL Operations & Analytics** module in the web application execu
 - `proc_5`: Insert New Customer (`sp_insert_customer`) - atomic customer registration returning the generated customer ID.
 
 ### 7. Updates & Deletes (DML)
-- `update_1`: Update customer address and phone number (`UPDATE customers ... WHERE customer_id = 101`).
-- `update_2`: 10% annual salary appraisal for branch managers (`UPDATE employees SET salary = ROUND(salary * 1.10, 2)`).
-- `update_3`: Suspend low-balance inactive accounts (`UPDATE accounts SET account_status = 'Suspended'`).
-- `update_4`: Interest rate concession on high-value loans (`UPDATE loans SET interest_rate = ROUND(interest_rate - 0.25, 2)`).
-- `delete_1`: Purge dormant zero-balance accounts (`DELETE FROM accounts WHERE balance = 0.00`).
-- `delete_2`: Purge temporary test customer leads (`DELETE FROM customers WHERE email LIKE '%@test.com'`).
+- `update_1`: Update account balance (`UPDATE accounts SET balance = 95000.00 WHERE account_id = 201`).
+- `update_2`: Change customer email (`UPDATE customers SET email = 'rahul.sharma.new@example.com' WHERE customer_id = 101`).
+- `update_3`: Update branch location (`UPDATE branches SET location = 'Cyberabad, Hyderabad' WHERE branch_id = 1`).
+- `delete_1`: Delete inactive accounts (`DELETE FROM accounts WHERE account_status = 'Inactive'`).
+- `delete_2`: Delete customers with no accounts (`DELETE FROM customers WHERE customer_id NOT IN (...)`).
 
 ### 8. Reports & Analytics
 - `report_1`: Top 5 customers ranked by aggregate balance.

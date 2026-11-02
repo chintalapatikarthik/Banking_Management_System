@@ -67,7 +67,7 @@ def verify_server():
             print(f"[PASS] GET {path} -> 200 OK ({expected_title})")
 
     # 6. Test SQL Query API (including Stored Procedures and Updates & Deletes)
-    sql_test_keys = ['basic_1', 'join_1', 'agg_1', 'subquery_1', 'view_1', 'proc_1', 'proc_3', 'update_1', 'delete_1', 'report_1']
+    sql_test_keys = ['basic_1', 'join_1', 'agg_1', 'subquery_1', 'view_1', 'proc_1', 'proc_3', 'update_1', 'update_2', 'update_3', 'delete_1', 'delete_2', 'report_1']
     for key in sql_test_keys:
         with opener.open(f"{base_url}/sql-operations/api/run/{key}") as resp:
             assert resp.status == 200
