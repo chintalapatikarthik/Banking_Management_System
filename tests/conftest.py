@@ -2,24 +2,29 @@ import pytest
 import os
 import sys
 
-# Ensure project root is in path
+# Ensure project root is in path and configure isolated SQLite test DB BEFORE importing app modules
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+os.environ['DATABASE_URL'] = 'sqlite:///test_suite.db'
+
+from sqlalchemy import create_engine
+import app.database
+test_engine = create_engine('sqlite:///test_suite.db')
+app.database.engine = test_engine
+app.database.SessionLocal.configure(bind=test_engine)
 
 from app import create_app
 from app.config import Config
-from app.database import engine, Base, get_db
+from app.database import Base, get_db
 from database.init_db import init_database
 
 class TestConfig(Config):
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///test_suite.db'
     WTF_CSRF_ENABLED = False
     SECRET_KEY = 'test-secret-key-1234'
 
 @pytest.fixture(scope='session')
 def app():
-    # Set in-memory test database
-    os.environ['DATABASE_URL'] = 'sqlite:///:memory:'
     app = create_app(TestConfig)
     return app
 
@@ -34,10 +39,9 @@ def runner(app):
 @pytest.fixture(scope='session', autouse=True)
 def clean_database_after_all_tests():
     yield
-    # Only reset if running SQLite test database
     try:
-        if 'sqlite' in str(engine.url):
-            init_database(reset=True)
+        if os.path.exists('test_suite.db'):
+            os.remove('test_suite.db')
     except Exception as e:
-        print(f"Error resetting database after test suite: {e}")
+        pass
 
