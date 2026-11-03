@@ -64,7 +64,8 @@
                         <tr>
                             <th>Account #</th>
                             <th>Type</th>
-                            <th>Branch</th>
+                            <th>Branch ID</th>
+                            <th>Branch Name</th>
                             <th>Status</th>
                             <th>Available Balance</th>
                             <th class="text-end">Actions</th>
@@ -76,6 +77,13 @@
                             <tr>
                                 <td class="fw-bold">#{{ a.account_id }}</td>
                                 <td><span class="badge bg-light text-dark border">{{ a.account_type }}</span></td>
+                                <td>
+                                    {% if a.branch_id %}
+                                    <span class="badge bg-light text-secondary border">#{{ a.branch_id }}</span>
+                                    {% else %}
+                                    <span class="text-muted small">-</span>
+                                    {% endif %}
+                                </td>
                                 <td>{{ a.branch_name }}</td>
                                 <td>
                                     <span class="status-pill {{ 'active' if a.account_status == 'Active' else 'inactive' }}">
@@ -92,7 +100,7 @@
                             {% endfor %}
                         {% else %}
                             <tr>
-                                <td colspan="6" class="text-center py-4 text-muted">
+                                <td colspan="7" class="text-center py-4 text-muted">
                                     No accounts opened for this customer yet.
                                 </td>
                             </tr>

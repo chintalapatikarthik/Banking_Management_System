@@ -43,8 +43,16 @@
                         </a>
                     </li>
                     <li class="list-group-item px-0 d-flex justify-content-between">
+                        <span class="text-muted">Customer ID</span>
+                        <span class="fw-semibold font-monospace">#{{ account.customer_id }}</span>
+                    </li>
+                    <li class="list-group-item px-0 d-flex justify-content-between">
                         <span class="text-muted">Assigned Branch</span>
                         <span class="fw-semibold">{{ account.branch_name }}</span>
+                    </li>
+                    <li class="list-group-item px-0 d-flex justify-content-between">
+                        <span class="text-muted">Branch ID</span>
+                        <span class="fw-semibold font-monospace">#{{ account.branch_id or '-' }}</span>
                     </li>
                     <li class="list-group-item px-0 d-flex justify-content-between">
                         <span class="text-muted">Date Opened</span>

@@ -55,8 +55,10 @@
             <thead>
                 <tr>
                     <th>Account #</th>
+                    <th>Customer ID</th>
                     <th>Account Holder</th>
-                    <th>Branch</th>
+                    <th>Branch ID</th>
+                    <th>Branch Name</th>
                     <th>Account Type</th>
                     <th>Available Balance</th>
                     <th>Status</th>
@@ -74,11 +76,33 @@
                             </a>
                         </td>
                         <td>
+                            <a href="{{ url_for('customer.view_customer', customer_id=a.customer_id) }}" class="badge bg-light text-primary border text-decoration-none">
+                                #{{ a.customer_id }}
+                            </a>
+                        </td>
+                        <td>
                             <a href="{{ url_for('customer.view_customer', customer_id=a.customer_id) }}" class="text-dark fw-semibold text-decoration-none">
                                 {{ a.customer_name }}
                             </a>
                         </td>
-                        <td>{{ a.branch_name }}</td>
+                        <td>
+                            {% if a.branch_id %}
+                            <a href="{{ url_for('branch.view_branch', branch_id=a.branch_id) }}" class="badge bg-light text-secondary border text-decoration-none">
+                                #{{ a.branch_id }}
+                            </a>
+                            {% else %}
+                            <span class="text-muted small">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if a.branch_id %}
+                            <a href="{{ url_for('branch.view_branch', branch_id=a.branch_id) }}" class="text-decoration-none text-dark">
+                                <i class="bi bi-building text-muted me-1"></i>{{ a.branch_name }}
+                            </a>
+                            {% else %}
+                            <span class="text-muted small">{{ a.branch_name }}</span>
+                            {% endif %}
+                        </td>
                         <td>
                             <span class="badge {% if a.account_type == 'Savings' %}bg-primary-subtle text-primary{% else %}bg-purple-subtle text-purple{% endif %} border">
                                 {{ a.account_type }}
@@ -114,7 +138,7 @@
                     {% endfor %}
                 {% else %}
                     <tr>
-                        <td colspan="8" class="text-center py-5 text-muted">
+                        <td colspan="10" class="text-center py-5 text-muted">
                             <i class="bi bi-wallet-x fs-1 d-block mb-2 text-secondary"></i>
                             No accounts found matching your filters.
                         </td>

@@ -58,10 +58,11 @@
         <table class="table custom-table align-middle">
             <thead>
                 <tr>
-                    <th>Emp #</th>
+                    <th>Emp ID</th>
                     <th>Employee Name</th>
                     <th>Position / Designation</th>
-                    <th>Branch Assignment</th>
+                    <th>Branch ID</th>
+                    <th>Branch Name</th>
                     <th>Monthly Salary</th>
                     <th>Joining Date</th>
                     {% if current_user.is_admin %}<th class="text-end">Actions</th>{% endif %}
@@ -74,7 +75,24 @@
                         <td class="fw-bold text-muted">#{{ e.employee_id }}</td>
                         <td class="fw-semibold text-dark">{{ e.employee_name }}</td>
                         <td><span class="badge bg-secondary-subtle text-secondary border">{{ e.position }}</span></td>
-                        <td><i class="bi bi-building text-muted me-1"></i>{{ e.branch_name }}</td>
+                        <td>
+                            {% if e.branch_id %}
+                            <a href="{{ url_for('branch.view_branch', branch_id=e.branch_id) }}" class="badge bg-light text-primary border text-decoration-none">
+                                #{{ e.branch_id }}
+                            </a>
+                            {% else %}
+                            <span class="text-muted small">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if e.branch_id %}
+                            <a href="{{ url_for('branch.view_branch', branch_id=e.branch_id) }}" class="text-decoration-none text-dark">
+                                <i class="bi bi-building text-muted me-1"></i>{{ e.branch_name }}
+                            </a>
+                            {% else %}
+                            <span class="text-muted small">{{ e.branch_name }}</span>
+                            {% endif %}
+                        </td>
                         <td class="fw-bold text-dark">{{ e.salary | currency }}</td>
                         <td class="text-muted small">{{ e.joining_date }}</td>
                         {% if current_user.is_admin %}
@@ -95,7 +113,7 @@
                     {% endfor %}
                 {% else %}
                     <tr>
-                        <td colspan="7" class="text-center py-5 text-muted">
+                        <td colspan="8" class="text-center py-5 text-muted">
                             <i class="bi bi-person-x fs-1 d-block mb-2 text-secondary"></i>
                             No employees found matching the filters.
                         </td>

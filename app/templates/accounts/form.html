@@ -43,7 +43,7 @@
                             <select class="form-select" id="branch_id" name="branch_id">
                                 <option value="">Select Branch...</option>
                                 {% for b in branches %}
-                                <option value="{{ b.id }}">{{ b.name }} ({{ b.location }})</option>
+                                <option value="{{ b.id }}">#{{ b.id }} - {{ b.name }} ({{ b.location }})</option>
                                 {% endfor %}
                             </select>
                         </div>

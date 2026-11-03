@@ -52,10 +52,11 @@
                 <table class="table custom-table align-middle">
                     <thead>
                         <tr>
-                            <th>Emp #</th>
+                            <th>Emp ID</th>
                             <th>Staff Name</th>
                             <th>Role / Position</th>
                             <th>Salary</th>
+                            <th>Joining Date</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -66,10 +67,11 @@
                                 <td class="fw-semibold text-dark">{{ e.employee_name }}</td>
                                 <td><span class="badge bg-secondary-subtle text-secondary border">{{ e.position }}</span></td>
                                 <td class="fw-semibold text-dark">{{ e.salary | currency }}</td>
+                                <td class="text-muted small">{{ e.joining_date }}</td>
                             </tr>
                             {% endfor %}
                         {% else %}
-                            <tr><td colspan="4" class="text-center py-4 text-muted">No employees assigned to this branch yet.</td></tr>
+                            <tr><td colspan="5" class="text-center py-4 text-muted">No employees assigned to this branch yet.</td></tr>
                         {% endif %}
                     </tbody>
                 </table>
@@ -86,9 +88,11 @@
                     <thead>
                         <tr>
                             <th>Account #</th>
+                            <th>Customer ID</th>
                             <th>Customer Name</th>
                             <th>Type</th>
                             <th>Status</th>
+                            <th>Opening Date</th>
                             <th class="text-end">Balance</th>
                         </tr>
                     </thead>
@@ -97,14 +101,16 @@
                             {% for a in accounts %}
                             <tr>
                                 <td class="fw-bold"><a href="{{ url_for('account.view_account', account_id=a.account_id) }}" class="text-decoration-none">#{{ a.account_id }}</a></td>
+                                <td><span class="badge bg-light text-primary border">#{{ a.customer_id }}</span></td>
                                 <td>{{ a.customer_name }}</td>
                                 <td><span class="badge bg-light text-dark border">{{ a.account_type }}</span></td>
                                 <td><span class="status-pill {{ 'active' if a.account_status == 'Active' else 'inactive' }}">{{ a.account_status }}</span></td>
+                                <td class="text-muted small">{{ a.opening_date }}</td>
                                 <td class="text-end fw-bold text-success">{{ a.balance | currency }}</td>
                             </tr>
                             {% endfor %}
                         {% else %}
-                            <tr><td colspan="5" class="text-center py-4 text-muted">No accounts mapped to this branch yet.</td></tr>
+                            <tr><td colspan="7" class="text-center py-4 text-muted">No accounts mapped to this branch yet.</td></tr>
                         {% endif %}
                     </tbody>
                 </table>
