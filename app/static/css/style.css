@@ -341,12 +341,47 @@ h1, h2, h3, h4, h5, h6, .brand-font {
     gap: 1rem;
 }
 
-.custom-table {
-    margin-bottom: 0;
+/* Universal Vertical & Horizontal Scrolling for all Data Tables */
+.table-responsive {
+    max-height: 480px;
+    overflow-y: auto !important;
+    overflow-x: auto !important;
+    overscroll-behavior: contain;
+    position: relative;
+    border-radius: var(--border-radius-sm);
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f8fafc;
 }
 
-.custom-table thead th {
-    background-color: #f8fafc;
+/* Custom Scrollbar for all table containers */
+.table-responsive::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.table-responsive::-webkit-scrollbar-track {
+    background: #f8fafc;
+    border-radius: 4px;
+}
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.custom-table {
+    margin-bottom: 0;
+    width: 100%;
+}
+
+.custom-table thead th,
+.table-responsive > .table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background-color: #f8fafc !important;
     color: #475569;
     font-weight: 600;
     font-size: 0.8rem;
@@ -354,6 +389,7 @@ h1, h2, h3, h4, h5, h6, .brand-font {
     letter-spacing: 0.5px;
     padding: 0.9rem 1.15rem;
     border-bottom: 1px solid var(--border-color);
+    box-shadow: inset 0 -1px 0 var(--border-color), 0 2px 4px rgba(0, 0, 0, 0.03);
 }
 
 .custom-table tbody td {
