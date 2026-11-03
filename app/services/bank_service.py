@@ -141,14 +141,14 @@ class BankService:
 
             tx_debit = Transaction(
                 account_id=source_account_id,
-                transaction_type='Transfer Debit',
+                transaction_type='Transfer',
                 amount=amount,
                 transaction_date=date.today(),
                 description=desc_src
             )
             tx_credit = Transaction(
                 account_id=target_account_id,
-                transaction_type='Transfer Credit',
+                transaction_type='Transfer',
                 amount=amount,
                 transaction_date=date.today(),
                 description=desc_tgt

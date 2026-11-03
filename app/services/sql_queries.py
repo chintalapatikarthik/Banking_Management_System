@@ -744,7 +744,7 @@ LIMIT 10;""",
        SUM(amount) AS total_amount,
        SUM(CASE WHEN transaction_type = 'Deposit' THEN amount ELSE 0 END) AS total_deposits,
        SUM(CASE WHEN transaction_type = 'Withdrawal' THEN amount ELSE 0 END) AS total_withdrawals,
-       SUM(CASE WHEN transaction_type = 'Transfer' THEN amount ELSE 0 END) AS total_transfers
+       SUM(CASE WHEN transaction_type LIKE 'Transfer%' THEN amount ELSE 0 END) AS total_transfers
 FROM transactions
 GROUP BY SUBSTR(transaction_date, 1, 7)
 ORDER BY month_year;""",
@@ -785,7 +785,7 @@ LIMIT 1;""",
        COUNT(t.transaction_id) AS transaction_count,
        COALESCE(SUM(CASE WHEN t.transaction_type = 'Deposit' THEN t.amount ELSE 0 END), 0) AS total_deposits,
        COALESCE(SUM(CASE WHEN t.transaction_type = 'Withdrawal' THEN t.amount ELSE 0 END), 0) AS total_withdrawals,
-       COALESCE(SUM(CASE WHEN t.transaction_type = 'Transfer' THEN t.amount ELSE 0 END), 0) AS total_transfers,
+       COALESCE(SUM(CASE WHEN t.transaction_type LIKE 'Transfer%' THEN t.amount ELSE 0 END), 0) AS total_transfers,
        COALESCE(SUM(t.amount), 0) AS total_transaction_amount
 FROM customers c
 LEFT JOIN accounts a ON c.customer_id = a.customer_id
