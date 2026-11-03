@@ -34,9 +34,10 @@ def runner(app):
 @pytest.fixture(scope='session', autouse=True)
 def clean_database_after_all_tests():
     yield
-    # Restore canonical sample data so test modifications never persist in banking.db
+    # Only reset if running SQLite test database
     try:
-        init_database(reset=True)
+        if 'sqlite' in str(engine.url):
+            init_database(reset=True)
     except Exception as e:
         print(f"Error resetting database after test suite: {e}")
 

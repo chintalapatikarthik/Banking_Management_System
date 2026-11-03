@@ -10,7 +10,18 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY', 'banking-management-system-secret-key-92817293')
     
     # Database URL
-    raw_db_url = os.environ.get('DATABASE_URL', 'sqlite:///banking.db')
+    raw_db_url = os.environ.get('DATABASE_URL', '').strip()
+    if not raw_db_url:
+        mysql_user = os.environ.get('MYSQL_USER')
+        mysql_pwd = os.environ.get('MYSQL_PASSWORD')
+        if mysql_user and mysql_pwd:
+            import urllib.parse
+            mysql_host = os.environ.get('MYSQL_HOST', '127.0.0.1')
+            mysql_port = os.environ.get('MYSQL_PORT', '3306')
+            mysql_db = os.environ.get('MYSQL_DATABASE', 'banking_management_system')
+            raw_db_url = f"mysql+pymysql://{mysql_user}:{urllib.parse.quote_plus(mysql_pwd)}@{mysql_host}:{mysql_port}/{mysql_db}"
+        else:
+            raw_db_url = 'sqlite:///banking.db'
     
     # Fix for Heroku/Render postgres or mysql dialect if needed
     if raw_db_url.startswith('postgres://'):

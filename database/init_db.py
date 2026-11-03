@@ -11,6 +11,50 @@ from app.models import Branch, Customer, Account, Transaction, Loan, Employee, U
 from app.config import Config
 from sqlalchemy import text
 
+def ensure_mysql_compatibility(db):
+    """Ensure MySQL tables have AUTO_INCREMENT primary keys and required auxiliary columns."""
+    if 'mysql' not in str(engine.url):
+        return
+
+    try:
+        db.execute(text("SET FOREIGN_KEY_CHECKS = 0;"))
+        # Ensure AUTO_INCREMENT on primary keys
+        pks = [
+            ('customers', 'customer_id'),
+            ('accounts', 'account_id'),
+            ('transactions', 'transaction_id'),
+            ('loans', 'loan_id'),
+            ('branches', 'branch_id'),
+            ('employees', 'employee_id')
+        ]
+        for tbl, col in pks:
+            try:
+                db.execute(text(f"ALTER TABLE {tbl} MODIFY {col} INT AUTO_INCREMENT;"))
+            except Exception:
+                pass
+
+        # Ensure description column in transactions
+        try:
+            db.execute(text("ALTER TABLE transactions ADD COLUMN description VARCHAR(255) NULL;"))
+        except Exception:
+            pass
+
+        # Ensure account_status and branch_id in accounts
+        try:
+            db.execute(text("ALTER TABLE accounts ADD COLUMN account_status VARCHAR(20) DEFAULT 'Active';"))
+        except Exception:
+            pass
+        try:
+            db.execute(text("ALTER TABLE accounts ADD COLUMN branch_id INT NULL;"))
+        except Exception:
+            pass
+
+        db.execute(text("SET FOREIGN_KEY_CHECKS = 1;"))
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print(f"Notice: MySQL compatibility check: {e}")
+
 def create_views(db):
     """Create database views for analysis, compatible with MySQL and SQLite."""
     views_sql = [
@@ -87,20 +131,22 @@ def create_procedures(db):
         with open(procedures_path, 'r', encoding='utf-8') as f:
             content = f.read()
 
-        # Split on $$ delimiter to handle multiple DELIMITER $$ blocks
-        blocks = content.split('$$')
+        # Support // and $$ delimiters
+        delimiter = '//' if '//' in content else '$$'
+        blocks = content.split(delimiter)
         for block in blocks:
             sql = block.strip()
-            if not sql or sql.startswith('DELIMITER'):
+            # Filter out DELIMITER command lines which are MySQL client directives
+            lines = [l for l in sql.split('\n') if not l.strip().upper().startswith('DELIMITER')]
+            sql = '\n'.join(lines).strip()
+            if not sql or not ('CREATE PROCEDURE' in sql.upper() or 'DROP PROCEDURE' in sql.upper()):
                 continue
-            sql = sql.replace('DELIMITER ;', '').strip()
-            if sql:
-                try:
-                    db.execute(text(sql))
-                    db.commit()
-                except Exception as e:
-                    print(f"Notice: stored procedure creation notice: {e}")
-                    db.rollback()
+            try:
+                db.execute(text(sql))
+                db.commit()
+            except Exception as e:
+                print(f"Notice: stored procedure creation notice: {e}")
+                db.rollback()
         print("[OK] MySQL Stored Procedures registered successfully.")
     except Exception as e:
         print(f"Notice: could not load procedures.sql: {e}")
@@ -280,6 +326,7 @@ def init_database(reset=False):
     print("[OK] Tables verified/created successfully.")
 
     with get_db() as db:
+        ensure_mysql_compatibility(db)
         if reset:
             clear_all_tables(db)
         create_views(db)

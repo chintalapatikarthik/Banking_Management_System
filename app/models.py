@@ -15,7 +15,6 @@ class Branch(Base):
     branch_id = Column(Integer, primary_key=True, autoincrement=True)
     branch_name = Column(String(100), nullable=False)
     location = Column(String(100), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
     accounts = relationship("Account", back_populates="branch", cascade="all, delete-orphan")
@@ -40,7 +39,6 @@ class Customer(Base):
     phone = Column(String(15), nullable=True)
     address = Column(String(255), nullable=True)
     registration_date = Column(Date, nullable=False, default=date.today)
-    created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
     accounts = relationship("Account", back_populates="customer", cascade="all, delete-orphan")
@@ -69,7 +67,6 @@ class Account(Base):
     balance = Column(Numeric(12, 2), nullable=False, default=Decimal('0.00'))
     opening_date = Column(Date, nullable=False, default=date.today)
     account_status = Column(String(20), nullable=False, default='Active') # 'Active', 'Inactive'
-    created_at = Column(DateTime, default=datetime.utcnow)
 
     __table_args__ = (
         CheckConstraint('balance >= 0', name='chk_positive_balance'),
@@ -102,7 +99,6 @@ class Transaction(Base):
     amount = Column(Numeric(10, 2), nullable=False)
     transaction_date = Column(Date, nullable=False, default=date.today)
     description = Column(String(255), nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
 
     __table_args__ = (
         CheckConstraint('amount > 0', name='chk_positive_transaction_amount'),
@@ -130,7 +126,6 @@ class Loan(Base):
     loan_amount = Column(Numeric(12, 2), nullable=False)
     interest_rate = Column(Numeric(5, 2), nullable=False)
     loan_date = Column(Date, nullable=False, default=date.today)
-    created_at = Column(DateTime, default=datetime.utcnow)
 
     __table_args__ = (
         CheckConstraint('loan_amount > 0', name='chk_positive_loan_amount'),
@@ -158,7 +153,6 @@ class Employee(Base):
     salary = Column(Numeric(10, 2), nullable=False)
     joining_date = Column(Date, nullable=False, default=date.today)
     branch_id = Column(Integer, ForeignKey('branches.branch_id', ondelete='SET NULL'), nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
     branch = relationship("Branch", back_populates="employees")

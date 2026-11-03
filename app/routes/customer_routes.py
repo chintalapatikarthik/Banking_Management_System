@@ -65,6 +65,7 @@ def create_customer():
             )
             db.add(cust)
             db.commit()
+            db.refresh(cust)
             flash(f"Customer '{name}' (ID: {cust.customer_id}) registered successfully!", "success")
             return redirect(url_for('customer.view_customer', customer_id=cust.customer_id))
 
